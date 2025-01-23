@@ -6,7 +6,8 @@ import io.ktor.server.routing.*
 import org.koin.ktor.ext.inject
 
 fun main(args: Array<String>) {
-    io.ktor.server.netty.EngineMain.main(args)
+    io.ktor.server.netty.EngineMain
+        .main(args)
 }
 
 fun Application.module() {

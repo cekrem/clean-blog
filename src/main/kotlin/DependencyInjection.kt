@@ -1,6 +1,7 @@
 package io.github.cekrem
 
-import io.github.cekrem.content.ContentStorage
+import io.github.cekrem.content.ContentGateway
+import io.github.cekrem.content.createRssGateway
 import io.github.cekrem.web.Routes
 import io.ktor.server.application.*
 import org.koin.dsl.module
@@ -12,14 +13,15 @@ fun Application.setupDependencyInjection() {
         slf4jLogger()
 
         modules(
-                module {
-                    single<ContentStorage> { TODO() }
-
-                    single {
-                        val contentStorage = get<ContentStorage>()
-                        Routes(contentStorage)
-                    }
+            module {
+                single<ContentGateway> {
+                    createRssGateway("https://example.com/feed.xml")
                 }
+
+                single {
+                    Routes(get())
+                }
+            },
         )
     }
 }
