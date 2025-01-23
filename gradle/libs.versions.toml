@@ -1,0 +1,26 @@
+
+[versions]
+koin-version = "3.5.6"
+kotlin-version = "2.1.0"
+ktor-version = "3.0.3"
+logback-version = "1.4.14"
+
+[libraries]
+koin-ktor = { module = "io.insert-koin:koin-ktor", version.ref = "koin-version" }
+koin-logger-slf4j = { module = "io.insert-koin:koin-logger-slf4j", version.ref = "koin-version" }
+ktor-server-core = { module = "io.ktor:ktor-server-core", version.ref = "ktor-version" }
+ktor-server-mustache = { module = "io.ktor:ktor-server-mustache", version.ref = "ktor-version" }
+ktor-server-default-headers = { module = "io.ktor:ktor-server-default-headers", version.ref = "ktor-version" }
+ktor-server-compression = { module = "io.ktor:ktor-server-compression", version.ref = "ktor-version" }
+ktor-server-caching-headers = { module = "io.ktor:ktor-server-caching-headers", version.ref = "ktor-version" }
+ktor-server-host-common = { module = "io.ktor:ktor-server-host-common", version.ref = "ktor-version" }
+ktor-server-auto-head-response = { module = "io.ktor:ktor-server-auto-head-response", version.ref = "ktor-version" }
+ktor-server-netty = { module = "io.ktor:ktor-server-netty", version.ref = "ktor-version" }
+logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback-version" }
+ktor-server-config-yaml = { module = "io.ktor:ktor-server-config-yaml", version.ref = "ktor-version" }
+ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor-version" }
+kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin-version" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin-version" }
+ktor = { id = "io.ktor.plugin", version.ref = "ktor-version" }
