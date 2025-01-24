@@ -6,4 +6,4 @@ interface ContentGateway {
     fun getByPath(path: String): Content?
 
     fun getSummariesByType(type: ContentType): List<ContentSummary>
-} 
+}

@@ -11,7 +11,7 @@ data class ContentType(
 data class Content(
     val path: String,
     val title: String,
-    val content: String,
+    val blocks: List<ContentBlock>,
     val type: ContentType,
     val metadata: Metadata,
     val publishedAt: LocalDateTime? = null,
@@ -32,3 +32,36 @@ data class Metadata(
     val draft: Boolean = false,
     val properties: Map<String, Any> = emptyMap(),
 )
+
+sealed interface ContentBlock {
+    data class Heading(
+        val text: String,
+        val level: Int = 1,
+    ) : ContentBlock
+
+    data class Text(
+        val content: String,
+    ) : ContentBlock
+
+    data class Code(
+        val content: String,
+        val language: String? = null,
+    ) : ContentBlock
+
+    data class Quote(
+        val content: String,
+        val attribution: String? = null,
+    ) : ContentBlock
+
+    data class Link(
+        val text: String,
+        val url: String,
+        val external: Boolean = false,
+    ) : ContentBlock
+
+    data class Image(
+        val url: String,
+        val alt: String? = null,
+        val caption: String? = null,
+    ) : ContentBlock
+}

@@ -1,14 +1,18 @@
 package io.github.cekrem
 
 import com.github.mustachejava.DefaultMustacheFactory
-import io.ktor.http.*
+import io.ktor.http.CacheControl
+import io.ktor.http.ContentType
 import io.ktor.http.content.CachingOptions
-import io.ktor.server.application.*
-import io.ktor.server.mustache.*
-import io.ktor.server.plugins.autohead.*
-import io.ktor.server.plugins.cachingheaders.*
-import io.ktor.server.plugins.compression.*
-import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.Application
+import io.ktor.server.application.install
+import io.ktor.server.mustache.Mustache
+import io.ktor.server.plugins.autohead.AutoHeadResponse
+import io.ktor.server.plugins.cachingheaders.CachingHeaders
+import io.ktor.server.plugins.compression.Compression
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 
 fun Application.configure() {
     // Templating
@@ -24,8 +28,13 @@ fun Application.configure() {
             when (outgoingContent.contentType?.withoutParameters()) {
                 ContentType.Text.CSS ->
                     CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 24 * 60 * 60))
+
                 else -> null
             }
         }
+    }
+
+    install(ContentNegotiation) {
+        json()
     }
 }
