@@ -1,4 +1,4 @@
-package io.github.cekrem
+package io.github.cekrem.web
 
 import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.http.CacheControl
