@@ -1,6 +1,9 @@
 package io.github.cekrem.web
 
-import io.github.cekrem.content.ContentGateway
+import io.github.cekrem.content.usecase.GetContent
+import io.github.cekrem.content.usecase.GetContentTypes
+import io.github.cekrem.content.usecase.ListContentsByType
+import io.github.cekrem.usecase.NoOutputUseCase
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -12,11 +15,12 @@ data class WebServerConfig(
     val host: String = "0.0.0.0",
 )
 
-class WebServer(
-    private val gateway: ContentGateway,
-    private val config: WebServerConfig = WebServerConfig(),
-) {
-    fun start() {
+class StartWebServer(
+    private val getContent: GetContent,
+    private val listContents: ListContentsByType,
+    private val getContentTypes: GetContentTypes,
+) : NoOutputUseCase<WebServerConfig> {
+    override fun execute(config: WebServerConfig) {
         if (config.debug) {
             System.setProperty("io.ktor.development", "true")
         }
@@ -28,7 +32,7 @@ class WebServer(
         ) {
             configure()
 
-            val routes = Routes(gateway)
+            val routes = Routes(getContent, listContents, getContentTypes)
             routing { routes.apply { configureRoutes() } }
         }.start(wait = true)
     }
