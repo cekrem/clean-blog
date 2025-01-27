@@ -3,7 +3,7 @@ package io.github.cekrem.web
 import io.github.cekrem.content.usecase.GetContent
 import io.github.cekrem.content.usecase.GetContentTypes
 import io.github.cekrem.content.usecase.ListContentsByType
-import io.github.cekrem.usecase.NoOutputUseCase
+import io.github.cekrem.usecase.UseCase
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
@@ -19,8 +19,8 @@ class StartWebServer(
     private val getContent: GetContent,
     private val listContents: ListContentsByType,
     private val getContentTypes: GetContentTypes,
-) : NoOutputUseCase<WebServerConfig> {
-    override fun execute(config: WebServerConfig) {
+) : UseCase<WebServerConfig, Unit> {
+    override operator fun invoke(config: WebServerConfig) {
         if (config.debug) {
             System.setProperty("io.ktor.development", "true")
         }

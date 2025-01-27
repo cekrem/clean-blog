@@ -1,11 +1,12 @@
 package io.github.cekrem.web
 
-import io.github.cekrem.content.usecase.GetContent
-import io.github.cekrem.content.usecase.GetContentTypes
-import io.github.cekrem.content.usecase.ListContentsByType
+import io.github.cekrem.usecase.UseCase
 import io.github.cekrem.web.dto.ContentDto
 import io.github.cekrem.web.dto.ContentSummaryDto
 import io.github.cekrem.web.dto.ContentTypeDto
+import io.github.cekrem.content.Content
+import io.github.cekrem.content.ContentType
+import io.github.cekrem.content.ContentSummary
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
@@ -15,9 +16,9 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 
 class Routes(
-    private val getContent: GetContent,
-    private val listContents: ListContentsByType,
-    private val getContentTypes: GetContentTypes,
+    private val getContent: UseCase<String, Content?>,
+    private val listContents: UseCase<ContentType, List<ContentSummary>>,
+    private val getContentTypes: UseCase<Unit, Set<ContentType>>,
 ) {
     fun Route.configureRoutes() {
         get("/health") {
@@ -33,7 +34,7 @@ class Routes(
             call.respond(content)
         }
 
-        getContentTypes.execute().filter { it.listable }.forEach { type ->
+        getContentTypes(Unit).filter { it.listable }.forEach { type ->
             get("/${type.name}") {
                 val contents = listContents(type)
                 // TODO: Render with Mustache
@@ -55,13 +56,12 @@ class Routes(
         route("/api") {
             get("/types") {
                 val types =
-                    getContentTypes
-                        .execute()
+                    getContentTypes(Unit)
                         .map(ContentTypeDto::from)
                 call.respond(types)
             }
 
-            getContentTypes.execute().filter { it.listable }.forEach { type ->
+            getContentTypes(Unit).filter { it.listable }.forEach { type ->
                 get("/${type.name}") {
                     val contents =
                         listContents(type)
