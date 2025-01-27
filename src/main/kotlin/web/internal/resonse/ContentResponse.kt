@@ -1,4 +1,4 @@
-package io.github.cekrem.web.dto
+package io.github.cekrem.web.internal.response
 
 import io.github.cekrem.content.Content
 import io.github.cekrem.content.ContentSummary
@@ -7,14 +7,14 @@ import io.github.cekrem.content.Metadata
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ContentTypeDto(
+data class ContentTypeResponse(
     val name: String,
     val singular: String,
     val listable: Boolean,
 ) {
     companion object {
         fun from(type: ContentType) =
-            ContentTypeDto(
+            ContentTypeResponse(
                 name = type.name,
                 singular = type.singular,
                 listable = type.listable,
@@ -23,24 +23,24 @@ data class ContentTypeDto(
 }
 
 @Serializable
-data class ContentDto(
+data class ContentResponse(
     val path: String,
     val title: String,
-    val blocks: List<ContentBlockDto>,
-    val type: ContentTypeDto,
-    val metadata: MetadataDto,
+    val blocks: List<ContentBlockResponse>,
+    val type: ContentTypeResponse,
+    val metadata: MetadataResponse,
     val publishedAt: String? = null,
     val updatedAt: String? = null,
     val slug: String,
 ) {
     companion object {
         fun from(content: Content) =
-            ContentDto(
+            ContentResponse(
                 path = content.path,
                 title = content.title,
-                blocks = content.blocks.map { ContentBlockDto.from(it) },
-                type = ContentTypeDto.from(content.type),
-                metadata = MetadataDto.from(content.metadata),
+                blocks = content.blocks.map { ContentBlockResponse.from(it) },
+                type = ContentTypeResponse.from(content.type),
+                metadata = MetadataResponse.from(content.metadata),
                 publishedAt = content.publishedAt?.toString(),
                 updatedAt = content.updatedAt?.toString(),
                 slug = content.slug,
@@ -49,25 +49,25 @@ data class ContentDto(
 }
 
 @Serializable
-data class ContentSummaryDto(
+data class ContentSummaryResponse(
     val path: String,
     val title: String,
-    val type: ContentTypeDto,
+    val type: ContentTypeResponse,
     val publishedAt: String? = null,
 ) {
     companion object {
         fun from(summary: ContentSummary) =
-            ContentSummaryDto(
+            ContentSummaryResponse(
                 path = summary.path,
                 title = summary.title,
-                type = ContentTypeDto.from(summary.type),
+                type = ContentTypeResponse.from(summary.type),
                 publishedAt = summary.publishedAt?.toString(),
             )
     }
 }
 
 @Serializable
-data class MetadataDto(
+data class MetadataResponse(
     val description: String? = null,
     val tags: List<String> = emptyList(),
     val draft: Boolean = false,
@@ -75,7 +75,7 @@ data class MetadataDto(
 ) {
     companion object {
         fun from(metadata: Metadata) =
-            MetadataDto(
+            MetadataResponse(
                 description = metadata.description,
                 tags = metadata.tags,
                 draft = metadata.draft,

@@ -5,8 +5,8 @@ import io.github.cekrem.content.internal.createMockGateway
 import io.github.cekrem.content.usecase.GetContentTypesUseCase
 import io.github.cekrem.content.usecase.GetContentUseCase
 import io.github.cekrem.content.usecase.ListContentsByTypeUseCase
-import io.github.cekrem.web.StartWebServer
-import io.github.cekrem.web.WebServerConfig
+import io.github.cekrem.web.ServerConfig
+import io.github.cekrem.web.startServer
 
 fun main(args: Array<String>) {
     val debug = args.contains("--debug")
@@ -21,11 +21,11 @@ fun main(args: Array<String>) {
     val listContents = ListContentsByTypeUseCase.createFromContentGateway(contentGateway)
     val getContentTypes = GetContentTypesUseCase.createFromContentGateway(contentGateway)
 
-    val config =
-        WebServerConfig(
+    val serverConfig =
+        ServerConfig(
             port = 8080,
             debug = debug,
         )
 
-    StartWebServer(getContent, listContents, getContentTypes)(config)
+    startServer(getContent, listContents, getContentTypes, serverConfig)
 }

@@ -1,12 +1,12 @@
-package io.github.cekrem.web
+package io.github.cekrem.web.internal
 
-import io.github.cekrem.usecase.UseCase
-import io.github.cekrem.web.dto.ContentDto
-import io.github.cekrem.web.dto.ContentSummaryDto
-import io.github.cekrem.web.dto.ContentTypeDto
 import io.github.cekrem.content.Content
-import io.github.cekrem.content.ContentType
 import io.github.cekrem.content.ContentSummary
+import io.github.cekrem.content.ContentType
+import io.github.cekrem.usecase.UseCase
+import io.github.cekrem.web.internal.response.ContentResponse
+import io.github.cekrem.web.internal.response.ContentSummaryResponse
+import io.github.cekrem.web.internal.response.ContentTypeResponse
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.response.respond
@@ -15,7 +15,7 @@ import io.ktor.server.routing.Route
 import io.ktor.server.routing.get
 import io.ktor.server.routing.route
 
-class Routes(
+internal class Routes(
     private val getContent: UseCase<String, Content?>,
     private val listContents: UseCase<ContentType, List<ContentSummary>>,
     private val getContentTypes: UseCase<Unit, Set<ContentType>>,
@@ -57,7 +57,7 @@ class Routes(
             get("/types") {
                 val types =
                     getContentTypes(Unit)
-                        .map(ContentTypeDto::from)
+                        .map(ContentTypeResponse::from)
                 call.respond(types)
             }
 
@@ -65,7 +65,7 @@ class Routes(
                 get("/${type.name}") {
                     val contents =
                         listContents(type)
-                            .map(ContentSummaryDto::from)
+                            .map(ContentSummaryResponse::from)
                     call.respond(contents)
                 }
 
@@ -75,7 +75,7 @@ class Routes(
                             ?: return@get call.respond(HttpStatusCode.BadRequest)
                     val content =
                         getContent("${type.name}/$slug")
-                            ?.let(ContentDto::from)
+                            ?.let(ContentResponse::from)
                             ?: return@get call.respond(HttpStatusCode.NotFound)
                     call.respond(content)
                 }

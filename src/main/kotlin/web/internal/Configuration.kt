@@ -1,4 +1,4 @@
-package io.github.cekrem.web
+package io.github.cekrem.web.internal
 
 import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.http.CacheControl
@@ -14,7 +14,7 @@ import io.ktor.server.plugins.compression.Compression
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 
-fun Application.configure() {
+internal fun Application.configure() {
     // Templating
     install(Mustache) { mustacheFactory = DefaultMustacheFactory("templates/mustache") }
 
