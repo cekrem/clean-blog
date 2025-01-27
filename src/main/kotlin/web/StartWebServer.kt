@@ -1,8 +1,8 @@
 package io.github.cekrem.web
 
-import io.github.cekrem.content.usecase.GetContent
-import io.github.cekrem.content.usecase.GetContentTypes
-import io.github.cekrem.content.usecase.ListContentsByType
+import io.github.cekrem.content.usecase.GetContentTypesUseCase
+import io.github.cekrem.content.usecase.GetContentUseCase
+import io.github.cekrem.content.usecase.ListContentsByTypeUseCase
 import io.github.cekrem.usecase.UseCase
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -16,9 +16,9 @@ data class WebServerConfig(
 )
 
 class StartWebServer(
-    private val getContent: GetContent,
-    private val listContents: ListContentsByType,
-    private val getContentTypes: GetContentTypes,
+    private val getContent: GetContentUseCase,
+    private val listContents: ListContentsByTypeUseCase,
+    private val getContentTypes: GetContentTypesUseCase,
 ) : UseCase<WebServerConfig, Unit> {
     override operator fun invoke(config: WebServerConfig) {
         if (config.debug) {

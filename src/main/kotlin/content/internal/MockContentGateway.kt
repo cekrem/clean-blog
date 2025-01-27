@@ -1,9 +1,9 @@
 package io.github.cekrem.content.internal
 
 import io.github.cekrem.content.Content
-import io.github.cekrem.content.ContentGateway
 import io.github.cekrem.content.ContentSummary
 import io.github.cekrem.content.ContentType
+import io.github.cekrem.content.internal.ContentGateway
 
 internal class MockContentGateway(
     private val contentTypes: Set<ContentType> = emptySet(),

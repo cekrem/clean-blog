@@ -1,10 +1,10 @@
 package io.github.cekrem
 
 import io.github.cekrem.content.ContentType
-import io.github.cekrem.content.createMockGateway
-import io.github.cekrem.content.usecase.GetContent
-import io.github.cekrem.content.usecase.GetContentTypes
-import io.github.cekrem.content.usecase.ListContentsByType
+import io.github.cekrem.content.internal.createMockGateway
+import io.github.cekrem.content.usecase.GetContentTypesUseCase
+import io.github.cekrem.content.usecase.GetContentUseCase
+import io.github.cekrem.content.usecase.ListContentsByTypeUseCase
 import io.github.cekrem.web.StartWebServer
 import io.github.cekrem.web.WebServerConfig
 
@@ -17,9 +17,9 @@ fun main(args: Array<String>) {
         )
 
     // Create use cases
-    val getContent = GetContent(contentGateway)
-    val listContents = ListContentsByType(contentGateway)
-    val getContentTypes = GetContentTypes(contentGateway)
+    val getContent = GetContentUseCase.createFromContentGateway(contentGateway)
+    val listContents = ListContentsByTypeUseCase.createFromContentGateway(contentGateway)
+    val getContentTypes = GetContentTypesUseCase.createFromContentGateway(contentGateway)
 
     val config =
         WebServerConfig(
