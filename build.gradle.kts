@@ -8,7 +8,7 @@ group = "io.github.cekrem"
 version = "0.0.1"
 
 application {
-    mainClass.set("io.github.cekrem.ApplicationKt")
+    mainClass.set("io.github.cekrem.MainKt")
 }
 
 repositories {

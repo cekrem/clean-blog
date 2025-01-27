@@ -6,11 +6,10 @@ import io.github.cekrem.usecase.UseCase
 
 interface GetContentUseCase : UseCase<String, Content?> {
     override operator fun invoke(input: String): Content?
+}
 
-    companion object {
-        internal fun createFromContentGateway(contentGateway: ContentGateway): GetContentUseCase =
-            object : GetContentUseCase {
-                override fun invoke(input: String): Content? = contentGateway.getByPath(input)
-            }
-    }
+internal class GetContentUseCaseImpl(
+    private val contentGateway: ContentGateway,
+) : GetContentUseCase {
+    override fun invoke(input: String): Content? = contentGateway.getByPath(input)
 }
