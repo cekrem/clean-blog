@@ -1,9 +1,9 @@
 package io.github.cekrem.web.internal.response
 
-import io.github.cekrem.content.Content
-import io.github.cekrem.content.ContentSummary
-import io.github.cekrem.content.ContentType
-import io.github.cekrem.content.Metadata
+import io.github.cekrem.domain.model.Content
+import io.github.cekrem.domain.model.ContentSummary
+import io.github.cekrem.domain.model.ContentType
+import io.github.cekrem.domain.model.Metadata
 import kotlinx.serialization.Serializable
 
 @Serializable

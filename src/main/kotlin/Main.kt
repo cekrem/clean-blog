@@ -1,10 +1,10 @@
 package io.github.cekrem
 
-import io.github.cekrem.content.ContentType
 import io.github.cekrem.content.internal.createMockGateway
-import io.github.cekrem.content.usecase.GetContentTypesUseCaseImpl
-import io.github.cekrem.content.usecase.GetContentUseCaseImpl
-import io.github.cekrem.content.usecase.ListContentsByTypeUseCaseImpl
+import io.github.cekrem.adapter.usecase.GetContentTypesUseCaseImpl
+import io.github.cekrem.adapter.usecase.GetContentUseCaseImpl
+import io.github.cekrem.adapter.usecase.ListContentsByTypeUseCaseImpl
+import io.github.cekrem.domain.model.ContentType
 import io.github.cekrem.web.ServerConfig
 import io.github.cekrem.web.startServer
 

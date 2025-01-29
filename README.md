@@ -1,46 +1,45 @@
-# blog
-
-This project was created using the [Ktor Project Generator](https://start.ktor.io).
-
-Here are some useful links to get you started:
-
-- [Ktor Documentation](https://ktor.io/docs/home.html)
-- [Ktor GitHub page](https://github.com/ktorio/ktor)
-- The [Ktor Slack chat](https://app.slack.com/client/T09229ZC6/C0A974TJ9). You'll need to [request an invite](https://surveys.jetbrains.com/s3/kotlin-slack-sign-up) to join.
-
-## Features
-
-Here's a list of features included in this project:
-
-| Name                                                           | Description                                                         |
-| ----------------------------------------------------------------|--------------------------------------------------------------------- |
-| [Koin](https://start.ktor.io/p/koin)                           | Provides dependency injection                                       |
-| [Routing](https://start.ktor.io/p/routing)                     | Provides a structured routing DSL                                   |
-| [Mustache](https://start.ktor.io/p/mustache)                   | Serves HTML content using Mustache template engine                  |
-| [Default Headers](https://start.ktor.io/p/default-headers)     | Adds a default set of headers to HTTP responses                     |
-| [Compression](https://start.ktor.io/p/compression)             | Compresses responses using encoding algorithms like GZIP            |
-| [Caching Headers](https://start.ktor.io/p/caching-headers)     | Provides options for responding with standard cache-control headers |
-| [Static Content](https://start.ktor.io/p/static-content)       | Serves static files from defined locations                          |
-| [AutoHeadResponse](https://start.ktor.io/p/auto-head-response) | Provides automatic responses for HEAD requests                      |
-
-## Building & Running
-
-To build or run the project, use one of the following tasks:
-
-| Task                          | Description                                                          |
-| -------------------------------|---------------------------------------------------------------------- |
-| `./gradlew test`              | Run the tests                                                        |
-| `./gradlew build`             | Build everything                                                     |
-| `buildFatJar`                 | Build an executable JAR of the server with all dependencies included |
-| `buildImage`                  | Build the docker image to use with the fat JAR                       |
-| `publishImageToLocalRegistry` | Publish the docker image locally                                     |
-| `run`                         | Run the server                                                       |
-| `runDocker`                   | Run using the local docker image                                     |
-
-If the server starts successfully, you'll see the following output:
-
-```
-2024-12-04 14:32:45.584 [main] INFO  Application - Application started in 0.303 seconds.
-2024-12-04 14:32:45.682 [main] INFO  Application - Responding at http://0.0.0.0:8080
-```
-
+src/main/kotlin/
+├── domain/                 # Enterprise business rules
+│   └── model/             # Domain entities
+│       ├── Content.kt
+│       ├── ContentBlock.kt
+│       ├── ContentSummary.kt
+│       ├── ContentType.kt
+│       └── Metadata.kt
+│
+├── application/           # Application business rules
+│   ├── port/             # Inbound/outbound ports (interfaces)
+│   │   └── ContentRepository.kt
+│   └── usecase/          # Use case interfaces
+│       ├── UseCase.kt
+│       ├── GetContentUseCase.kt
+│       ├── ListContentsByTypeUseCase.kt
+│       └── GetContentTypesUseCase.kt
+│
+├── adapter/              # Interface adapters
+│   ├── usecase/         # Use case implementations
+│   │   ├── GetContentUseCaseImpl.kt
+│   │   ├── ListContentsByTypeUseCaseImpl.kt
+│   │   └── GetContentTypesUseCaseImpl.kt
+│   │
+│   ├── persistence/     # Repository implementations
+│   │   ├── ContentGateway.kt
+│   │   ├── FileContentGateway.kt
+│   │   ├── RssContentGateway.kt
+│   │   ├── MockContentGateway.kt
+│   │   └── parser/
+│   │       ├── ContentParser.kt
+│   │       └── MarkdownContentParser.kt
+│   │
+│   └── web/            # Web-related adapters
+│       ├── Routes.kt
+│       ├── Server.kt
+│       ├── Configuration.kt
+│       └── response/
+│           ├── ContentResponse.kt
+│           ├── ContentBlockResponse.kt
+│           └── ContentTypeResponse.kt
+│
+└── infrastructure/      # Frameworks & drivers
+└── config/         # Framework configurations
+└── KtorConfig.kt

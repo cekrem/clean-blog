@@ -1,12 +1,8 @@
-package io.github.cekrem.content.usecase
+package io.github.cekrem.adapter.usecase
 
-import io.github.cekrem.content.Content
+import io.github.cekrem.application.usecase.GetContentUseCase
 import io.github.cekrem.content.internal.ContentGateway
-import io.github.cekrem.usecase.UseCase
-
-interface GetContentUseCase : UseCase<String, Content?> {
-    override operator fun invoke(input: String): Content?
-}
+import io.github.cekrem.domain.model.Content
 
 internal class GetContentUseCaseImpl(
     private val contentGateway: ContentGateway,

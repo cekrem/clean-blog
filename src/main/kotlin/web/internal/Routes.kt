@@ -1,13 +1,12 @@
 package io.github.cekrem.web.internal
 
-import io.github.cekrem.content.usecase.GetContentTypesUseCase
-import io.github.cekrem.content.usecase.GetContentUseCase
-import io.github.cekrem.content.usecase.ListContentsByTypeUseCase
+import io.github.cekrem.application.usecase.GetContentTypesUseCase
+import io.github.cekrem.application.usecase.GetContentUseCase
+import io.github.cekrem.application.usecase.ListContentsByTypeUseCase
 import io.github.cekrem.web.internal.response.ContentResponse
 import io.github.cekrem.web.internal.response.ContentSummaryResponse
 import io.github.cekrem.web.internal.response.ContentTypeResponse
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route

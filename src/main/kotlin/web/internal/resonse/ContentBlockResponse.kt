@@ -1,6 +1,6 @@
 package io.github.cekrem.web.internal.response
 
-import io.github.cekrem.content.ContentBlock
+import io.github.cekrem.domain.model.ContentBlock
 import kotlinx.serialization.Serializable
 
 @Serializable

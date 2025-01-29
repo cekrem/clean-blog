@@ -1,14 +1,13 @@
 package io.github.cekrem.web
 
-import io.github.cekrem.content.usecase.GetContentTypesUseCase
-import io.github.cekrem.content.usecase.GetContentUseCase
-import io.github.cekrem.content.usecase.ListContentsByTypeUseCase
+import io.github.cekrem.application.usecase.GetContentTypesUseCase
+import io.github.cekrem.application.usecase.GetContentUseCase
+import io.github.cekrem.application.usecase.ListContentsByTypeUseCase
 import io.github.cekrem.web.internal.Routes
 import io.github.cekrem.web.internal.configure
-import io.ktor.server.application.*
-import io.ktor.server.engine.*
-import io.ktor.server.netty.*
-import io.ktor.server.routing.*
+import io.ktor.server.engine.embeddedServer
+import io.ktor.server.netty.Netty
+import io.ktor.server.routing.routing
 
 data class ServerConfig(
     val port: Int = 8080,
