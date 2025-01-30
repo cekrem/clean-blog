@@ -1,7 +1,7 @@
-package io.github.cekrem.application.usecase
+package application.usecase
 
-import io.github.cekrem.domain.model.Content
+import domain.model.Content
 
 interface GetContentUseCase : UseCase<String, Content?> {
-    override operator fun invoke(input: String): Content?
+    override suspend operator fun invoke(input: String): Content?
 }

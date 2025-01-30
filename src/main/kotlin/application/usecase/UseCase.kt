@@ -1,5 +1,5 @@
-package io.github.cekrem.application.usecase
+package application.usecase
 
 interface UseCase<in I, out O> {
-    operator fun invoke(input: I): O
+    suspend operator fun invoke(input: I): O
 }

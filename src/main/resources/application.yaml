@@ -1,6 +1,6 @@
 ktor:
   application:
     modules:
-      - io.github.cekrem.web.WebServerKt.configureWebServer
+      - io.github.cekrem.infrastructure.web.WebServerKt.configureWebServer
   deployment:
     port: 8080

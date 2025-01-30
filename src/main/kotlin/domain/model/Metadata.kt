@@ -1,4 +1,4 @@
-package io.github.cekrem.domain.model
+package domain.model
 
 data class Metadata(
     val description: String? = null,

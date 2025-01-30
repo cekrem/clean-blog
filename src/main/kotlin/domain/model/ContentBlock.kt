@@ -1,4 +1,4 @@
-package io.github.cekrem.domain.model
+package domain.model
 
 sealed interface ContentBlock {
     data class Heading(

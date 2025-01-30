@@ -1,10 +1,11 @@
-package io.github.cekrem.web
+package infrastructure.web
 
-import io.github.cekrem.application.usecase.GetContentTypesUseCase
-import io.github.cekrem.application.usecase.GetContentUseCase
-import io.github.cekrem.application.usecase.ListContentsByTypeUseCase
-import io.github.cekrem.web.internal.Routes
-import io.github.cekrem.web.internal.configure
+import application.usecase.GetContentUseCase
+import application.usecase.GetListableContentTypes
+import application.usecase.ListContentsByTypeUseCase
+import infrastructure.web.internal.Routes
+import infrastructure.web.internal.configure
+import io.github.cekrem.infrastructure.web.internal.controller.ContentController
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.routing.routing
@@ -18,7 +19,7 @@ data class ServerConfig(
 fun startServer(
     getContent: GetContentUseCase,
     listContents: ListContentsByTypeUseCase,
-    getContentTypes: GetContentTypesUseCase,
+    getListableContentTypes: GetListableContentTypes,
     config: ServerConfig = ServerConfig(),
 ) {
     if (config.debug) {
@@ -31,8 +32,14 @@ fun startServer(
         host = config.host,
     ) {
         configure()
+        val contentController = ContentController(
+            getContent = getContent,
+            listContents = listContents,
+            getListableContentTypes = getListableContentTypes
+        )
 
-        val routes = Routes(getContent, listContents, getContentTypes)
+        val routes = Routes(contentController)
+
         routing { routes.apply { configureRoutes() } }
     }.start(wait = true)
 }

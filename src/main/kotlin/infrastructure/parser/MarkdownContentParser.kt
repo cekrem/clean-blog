@@ -1,7 +1,8 @@
-package io.github.cekrem.content.internal
+package infrastructure.parser
 
-import io.github.cekrem.domain.model.Content
-import io.github.cekrem.domain.model.ContentType
+import domain.model.Content
+import domain.model.ContentType
+import domain.parser.ContentParser
 
 internal class MarkdownContentParser : ContentParser {
     override fun parse(

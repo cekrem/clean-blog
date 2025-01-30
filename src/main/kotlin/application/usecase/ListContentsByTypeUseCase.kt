@@ -1,8 +1,8 @@
-package io.github.cekrem.application.usecase
+package application.usecase
 
-import io.github.cekrem.domain.model.ContentSummary
-import io.github.cekrem.domain.model.ContentType
+import domain.model.ContentSummary
+import domain.model.ContentType
 
 interface ListContentsByTypeUseCase : UseCase<ContentType, List<ContentSummary>> {
-    override operator fun invoke(type: ContentType): List<ContentSummary>
+    override suspend operator fun invoke(type: ContentType): List<ContentSummary>
 }

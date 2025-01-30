@@ -1,4 +1,4 @@
-package io.github.cekrem.web.internal
+package infrastructure.web.internal
 
 import com.github.mustachejava.DefaultMustacheFactory
 import io.ktor.http.CacheControl
@@ -16,7 +16,7 @@ import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 
 internal fun Application.configure() {
     // Templating
-    install(Mustache) { mustacheFactory = DefaultMustacheFactory("templates/mustache") }
+    install(Mustache) { mustacheFactory = DefaultMustacheFactory("templates") }
 
     // HTTP Features
     install(DefaultHeaders) { header("X-Engine", "Ktor") }

@@ -1,0 +1,28 @@
+<h1>{{title}}</h1>
+<p>{{metadata.description}}</p>
+{{#blocks}}
+    {{#Heading}}
+        <h{{level}}>{{text}}</h{{level}}>
+    {{/Heading}}
+    {{#Text}}
+        <p>{{content}}</p>
+    {{/Text}}
+    {{#Code}}
+        <pre><code class="{{language}}">{{content}}</code></pre>
+    {{/Code}}
+    {{#Quote}}
+        <blockquote>{{content}}
+            <footer>{{attribution}}</footer>
+        </blockquote>
+    {{/Quote}}
+    {{#Link}}
+        <a href="{{url}}" {{#external}}target="_blank"{{/external}}>{{text}}</a>
+    {{/Link}}
+    {{#Image}}
+        <figure>
+            <img src="{{url}}" alt="{{alt}}">
+            {{#caption}}
+                <figcaption>{{caption}}</figcaption>{{/caption}}
+        </figure>
+    {{/Image}}
+{{/blocks}}
