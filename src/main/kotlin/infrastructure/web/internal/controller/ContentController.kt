@@ -4,18 +4,17 @@ import application.usecase.GetContentUseCase
 import application.usecase.GetListableContentTypes
 import application.usecase.ListContentsByTypeUseCase
 import domain.model.ContentType
-import infrastructure.web.internal.template.toTemplateData
-import io.github.cekrem.infrastructure.web.internal.template.toTemplateData
+import interfaceadapters.presenter.ContentPresenter
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.ApplicationCall
-import io.ktor.server.mustache.MustacheContent
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 
 class ContentController(
     private val getContent: GetContentUseCase,
     private val listContents: ListContentsByTypeUseCase,
-    private val getListableContentTypes: GetListableContentTypes
+    private val getListableContentTypes: GetListableContentTypes,
+    private val contentPresenter: ContentPresenter,
 ) {
     suspend fun getListableContentTypes(): Set<ContentType> {
         return getListableContentTypes(Unit)
@@ -34,7 +33,7 @@ class ContentController(
             return
         }
 
-        call.respond(MustacheContent("content.mustache", content.toTemplateData()))
+        call.respond(contentPresenter.presentContent(content))
     }
 
     suspend fun handleIndex(call: ApplicationCall) {
@@ -44,6 +43,6 @@ class ContentController(
 
     suspend fun handleListContents(call: ApplicationCall, type: ContentType) {
         val list = listContents(type)
-        call.respond(MustacheContent("list.mustache", list.toTemplateData()))
+        call.respond(contentPresenter.presentContentList(list))
     }
 }

@@ -8,6 +8,7 @@ import infrastructure.usecase.GetContentUseCaseImpl
 import infrastructure.usecase.GetListableContentTypesImpl
 import infrastructure.usecase.ListContentsByTypeUseCaseImpl
 import infrastructure.web.ServerConfig
+import infrastructure.web.internal.presenter.MustacheContentPresenter
 import infrastructure.web.startServer
 
 fun main(args: Array<String>) {
@@ -34,6 +35,9 @@ fun main(args: Array<String>) {
     val getContent = GetContentUseCaseImpl(contentSource)
     val listContents = ListContentsByTypeUseCaseImpl(contentSource)
     val getListableContentTypes = GetListableContentTypesImpl(contentSource)
+    
+    // Create content presenter
+    val contentPresenter = MustacheContentPresenter()
 
     val serverConfig =
         ServerConfig(
@@ -41,5 +45,10 @@ fun main(args: Array<String>) {
             debug = debug,
         )
 
-    startServer(getContent, listContents, getListableContentTypes, serverConfig)
+    startServer(
+        getContent = getContent,
+        listContents = listContents,
+        getListableContentTypes = getListableContentTypes,
+        contentPresenter = contentPresenter,
+        config = serverConfig,)
 }

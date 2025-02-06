@@ -5,6 +5,7 @@ import application.usecase.GetListableContentTypes
 import application.usecase.ListContentsByTypeUseCase
 import infrastructure.web.internal.Routes
 import infrastructure.web.internal.configure
+import interfaceadapters.presenter.ContentPresenter
 import io.github.cekrem.infrastructure.web.internal.controller.ContentController
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
@@ -20,6 +21,7 @@ fun startServer(
     getContent: GetContentUseCase,
     listContents: ListContentsByTypeUseCase,
     getListableContentTypes: GetListableContentTypes,
+    contentPresenter: ContentPresenter,
     config: ServerConfig = ServerConfig(),
 ) {
     if (config.debug) {
@@ -35,7 +37,8 @@ fun startServer(
         val contentController = ContentController(
             getContent = getContent,
             listContents = listContents,
-            getListableContentTypes = getListableContentTypes
+            getListableContentTypes = getListableContentTypes,
+            contentPresenter = contentPresenter,
         )
 
         val routes = Routes(contentController)
