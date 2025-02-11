@@ -15,6 +15,7 @@ internal fun createFileGateway(contentRoot: String): ContentSource =
     FileContentSource(
         contentRoot,
         parser = MarkdownContentParser(),
+        extension = "md",
     )
 
 internal fun createMockGateway(

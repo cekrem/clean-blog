@@ -1,6 +1,6 @@
 package io.github.cekrem.domain.model
 
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
 
 data class ContentSummary(
     val path: String,
