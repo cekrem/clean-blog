@@ -1,7 +1,7 @@
 package io.github.cekrem.application.usecase
 
 import io.github.cekrem.application.config.BlogConfig
-import io.github.cekrem.domain.model.MenuItem
+import io.github.cekrem.application.config.MenuItem
 
 class GetMenuItemsUseCase(
     private val blogConfig: BlogConfig,

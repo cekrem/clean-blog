@@ -1,4 +1,4 @@
-package io.github.cekrem.domain.model
+package io.github.cekrem.application.config
 
 data class MenuItem(
     val title: String,

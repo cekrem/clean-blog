@@ -1,6 +1,6 @@
 package io.github.cekrem.application.config
 
-import io.github.cekrem.domain.model.MenuItem
+import io.github.cekrem.application.config.MenuItem
 
 data class BlogConfig(
     val title: String,
