@@ -166,9 +166,12 @@ class MarkdownContentParserTest {
             // Then
             assertEquals(
                 ContentBlock.Code(
-                    content = """fun hello() {
-                    println("Hello, World!")
-                }""",
+                    content =
+                        """
+                        fun hello() {
+                            println("Hello, World!")
+                        }
+                        """.trimIndent(),
                     language = "kotlin",
                 ),
                 result.blocks[0],

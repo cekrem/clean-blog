@@ -18,16 +18,13 @@ internal class MarkdownContentParser : ContentParser {
         type: ContentType,
     ): Content {
         val frontMatter = parseFrontMatter(rawContent)
-
         val markdownContent =
             rawContent
                 .substringAfter("---\n", "")
                 .substringAfter("---\n", "")
 
-        val tree = markdownParserImpl.buildMarkdownTreeFromString(markdownContent)
-
-        val blocks =
-            mapTreeToBlocks(tree = tree, markdownContent = markdownContent)
+        val tree = markdownTreeParser.buildMarkdownTreeFromString(markdownContent)
+        val blocks = blockParser.parseBlocks(tree, markdownContent)
 
         return Content(
             path = path,
@@ -37,113 +34,6 @@ internal class MarkdownContentParser : ContentParser {
             metadata = frontMatter.metadata,
         )
     }
-
-    @Suppress("LongMethod")
-    private fun mapTreeToBlocks(
-        tree: ASTNode,
-        markdownContent: String,
-    ): List<ContentBlock> =
-        tree.children.mapNotNull { node ->
-            when (node.type) {
-                // Headers
-                MarkdownElementTypes.ATX_1 ->
-                    ContentBlock.Heading(
-                        text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
-                        level = 1,
-                    )
-
-                MarkdownElementTypes.ATX_2 ->
-                    ContentBlock.Heading(
-                        text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
-                        level = 2,
-                    )
-
-                MarkdownElementTypes.ATX_3 ->
-                    ContentBlock.Heading(
-                        text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
-                        level = 3,
-                    )
-
-                MarkdownElementTypes.ATX_4 ->
-                    ContentBlock.Heading(
-                        text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
-                        level = 4,
-                    )
-
-                MarkdownElementTypes.ATX_5 ->
-                    ContentBlock.Heading(
-                        text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
-                        level = 5,
-                    )
-
-                MarkdownElementTypes.ATX_6 ->
-                    ContentBlock.Heading(
-                        text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
-                        level = 6,
-                    )
-
-                // Text content
-                MarkdownElementTypes.PARAGRAPH ->
-                    ContentBlock.Text(
-                        content = markdownContent.substring(node.startOffset, node.endOffset).trim(),
-                    )
-
-                // Code blocks
-                MarkdownElementTypes.CODE_FENCE -> {
-                    val content = markdownContent.substring(node.startOffset, node.endOffset)
-                    val lines = content.lines()
-                    val language =
-                        lines
-                            .firstOrNull()
-                            ?.trim('`')
-                            ?.takeIf { it.isNotEmpty() }
-                    ContentBlock.Code(
-                        content = lines.drop(1).dropLast(1).joinToString("\n"),
-                        language = language,
-                    )
-                }
-
-                // Quotes
-                MarkdownElementTypes.BLOCK_QUOTE -> {
-                    val content = markdownContent.substring(node.startOffset, node.endOffset)
-                    // Look for attribution pattern: -- Author or > -- Author
-                    val parts = content.split(Regex("""\s*--\s*"""), limit = 2)
-                    ContentBlock.Quote(
-                        content = parts[0].trim('>', ' '),
-                        attribution = parts.getOrNull(1)?.trim(),
-                    )
-                }
-
-                // Links
-                MarkdownElementTypes.LINK_DEFINITION -> {
-                    val content = markdownContent.substring(node.startOffset, node.endOffset)
-                    // Parse [text](url) format
-                    val text = content.substringAfter('[').substringBefore(']')
-                    val url = content.substringAfter('(').substringBefore(')')
-                    ContentBlock.Link(
-                        text = text,
-                        url = url,
-                        external = url.startsWith("http") || url.startsWith("//"),
-                    )
-                }
-
-                // Images
-                MarkdownElementTypes.IMAGE -> {
-                    val content = markdownContent.substring(node.startOffset, node.endOffset)
-                    // Parse ![alt](url "caption") format
-                    val alt = content.substringAfter('[').substringBefore(']')
-                    val urlAndCaption = content.substringAfter('(').substringBefore(')')
-                    val parts = urlAndCaption.split(Regex("""\s+"([^"]+)""""))
-                    ContentBlock.Image(
-                        url = parts[0].trim(),
-                        alt = alt.takeIf { it.isNotEmpty() },
-                        caption = parts.getOrNull(1)?.trim('"'),
-                    )
-                }
-
-                else -> null // Ignore unsupported elements
-            }
-        }
 
     private fun parseFrontMatter(rawContent: String): FrontMatter {
         val rawFrontMatter = rawContent.split("---\n").getOrNull(1) ?: throw InvalidFrontMatterException()
@@ -189,7 +79,179 @@ internal class MarkdownContentParser : ContentParser {
 
     private companion object {
         val markdownFlavor = CommonMarkFlavourDescriptor()
-        val markdownParserImpl = MarkdownParser(markdownFlavor)
+        val markdownTreeParser = MarkdownParser(markdownFlavor)
+        val blockParser = MarkdownBlockParser()
+    }
+}
+
+private class MarkdownBlockParser {
+    fun parseBlocks(
+        tree: ASTNode,
+        markdownContent: String,
+    ): List<ContentBlock> =
+        buildList {
+            tree.children.forEach { node ->
+                parseNode(node, markdownContent)?.let { add(it) }
+            }
+        }
+
+    private fun parseNode(
+        node: ASTNode,
+        markdownContent: String,
+    ): ContentBlock? =
+        when (node.type) {
+            MarkdownElementTypes.ATX_1,
+            MarkdownElementTypes.ATX_2,
+            MarkdownElementTypes.ATX_3,
+            MarkdownElementTypes.ATX_4,
+            MarkdownElementTypes.ATX_5,
+            MarkdownElementTypes.ATX_6,
+            -> parseHeading(node, markdownContent)
+
+            MarkdownElementTypes.PARAGRAPH -> parseParagraph(node, markdownContent)
+            MarkdownElementTypes.CODE_FENCE -> parseCodeBlock(node, markdownContent)
+            MarkdownElementTypes.BLOCK_QUOTE -> parseQuote(node, markdownContent)
+            MarkdownElementTypes.IMAGE -> parseImage(node, markdownContent)
+            else -> null
+        }
+
+    private fun parseHeading(
+        node: ASTNode,
+        markdownContent: String,
+    ): ContentBlock.Heading {
+        val level =
+            when (node.type) {
+                MarkdownElementTypes.ATX_1 -> 1
+                MarkdownElementTypes.ATX_2 -> 2
+                MarkdownElementTypes.ATX_3 -> 3
+                MarkdownElementTypes.ATX_4 -> 4
+                MarkdownElementTypes.ATX_5 -> 5
+                MarkdownElementTypes.ATX_6 -> 6
+                else -> throw IllegalArgumentException("Invalid heading type")
+            }
+        return ContentBlock.Heading(
+            text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
+            level = level,
+        )
+    }
+
+    private fun parseParagraph(
+        node: ASTNode,
+        markdownContent: String,
+    ): ContentBlock {
+        // Check if paragraph contains a single link or image
+        if (node.children.size == 1) {
+            when (node.children[0].type) {
+                MarkdownElementTypes.INLINE_LINK -> return parseLink(node.children[0], markdownContent)
+                MarkdownElementTypes.IMAGE -> return parseImage(node.children[0], markdownContent)
+            }
+        }
+
+        return ContentBlock.Text(
+            content = markdownContent.substring(node.startOffset, node.endOffset).trim(),
+        )
+    }
+
+    private fun parseCodeBlock(
+        node: ASTNode,
+        markdownContent: String,
+    ): ContentBlock.Code {
+        val content = markdownContent.substring(node.startOffset, node.endOffset)
+        val lines = content.lines()
+        val language =
+            lines
+                .firstOrNull()
+                ?.trim('`')
+                ?.takeIf { it.isNotEmpty() }
+
+        // Get content lines (excluding fence lines) and normalize indentation
+        val codeLines = lines.drop(1).dropLast(1)
+        val normalizedContent = normalizeIndentation(codeLines)
+
+        return ContentBlock.Code(
+            content = normalizedContent,
+            language = language,
+        )
+    }
+
+    private fun normalizeIndentation(lines: List<String>): String {
+        if (lines.isEmpty()) return ""
+
+        // Find the minimum indentation level (excluding empty lines)
+        val minIndent =
+            lines
+                .filter { it.isNotBlank() }
+                .minOfOrNull { line -> line.takeWhile { it.isWhitespace() }.length } ?: 0
+
+        // Remove the common indentation from all lines
+        return lines
+            .map { line ->
+                if (line.isBlank()) line else line.substring(minIndent)
+            }.joinToString("\n")
+    }
+
+    private fun parseQuote(
+        node: ASTNode,
+        markdownContent: String,
+    ): ContentBlock.Quote {
+        val content = markdownContent.substring(node.startOffset, node.endOffset)
+
+        // Split into lines and process
+        val lines =
+            content
+                .lines()
+                .map { it.trim('>', ' ') } // Remove '>' and spaces from each line
+
+        // Find attribution if it exists (last line starting with --)
+        val (contentLines, attributionLine) =
+            if (lines.last().startsWith("--")) {
+                lines.dropLast(1) to lines.last().substringAfter("--").trim()
+            } else {
+                lines to null
+            }
+
+        return ContentBlock.Quote(
+            content = contentLines.joinToString(" ").trim(),
+            attribution = attributionLine,
+        )
+    }
+
+    private fun parseLink(
+        node: ASTNode,
+        markdownContent: String,
+    ): ContentBlock.Link {
+        val content = markdownContent.substring(node.startOffset, node.endOffset)
+        val text = content.substringAfter('[').substringBefore(']')
+        val url = content.substringAfter('(').substringBefore(')')
+
+        return ContentBlock.Link(
+            text = text,
+            url = url,
+            external = url.startsWith("http") || url.startsWith("//"),
+        )
+    }
+
+    private fun parseImage(
+        node: ASTNode,
+        markdownContent: String,
+    ): ContentBlock.Image {
+        val content = markdownContent.substring(node.startOffset, node.endOffset)
+        val alt = content.substringAfter('[').substringBefore(']')
+        val urlAndCaption = content.substringAfter('(').substringBefore(')')
+
+        // Extract URL and caption - caption is within quotes after the URL
+        val url = urlAndCaption.substringBefore('"').trim()
+        val caption =
+            urlAndCaption
+                .substringAfter('"', "")
+                .substringBefore('"', "")
+                .takeIf { it.isNotEmpty() }
+
+        return ContentBlock.Image(
+            url = url,
+            alt = alt.takeIf { it.isNotEmpty() },
+            caption = caption,
+        )
     }
 }
 
