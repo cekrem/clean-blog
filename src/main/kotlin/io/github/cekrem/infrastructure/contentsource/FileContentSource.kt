@@ -37,16 +37,20 @@ internal class FileContentSource(
         return parser.parse(rawContent = content, path = path, type = type)
     }
 
-    override fun getSummariesByType(type: ContentType): List<ContentSummary> =
-        Path(contentRoot)
-            .resolve(type.name)
-            .toFile()
+    override fun getSummariesByType(type: ContentType): List<ContentSummary> {
+        val typeDirectory = Path(contentRoot).resolve(type.name).toFile()
+
+        if (!typeDirectory.exists() || !typeDirectory.isDirectory) {
+            return emptyList()
+        }
+
+        return typeDirectory
             .listFiles()
             .mapNotNull { file ->
                 // Construct the relative path by combining type name and file name without extension
                 val relativePath = "${type.name}/${file.nameWithoutExtension}"
                 getByPath(relativePath)
-            }.map {
+            }.mapNotNull {
                 ContentSummary(
                     title = it.title,
                     path = it.path,
@@ -54,6 +58,7 @@ internal class FileContentSource(
                     publishedAt = it.metadata.publishedAt,
                 )
             }.sortedByDescending { it.publishedAt }
+    }
 
     override fun getAvailableTypes(): Set<ContentType> =
         Path(contentRoot)
