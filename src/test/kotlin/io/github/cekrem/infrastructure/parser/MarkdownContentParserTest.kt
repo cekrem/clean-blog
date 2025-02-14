@@ -4,6 +4,7 @@ import io.github.cekrem.application.parser.ContentParser
 import io.github.cekrem.domain.model.ContentBlock
 import io.github.cekrem.domain.model.ContentType
 import io.github.cekrem.domain.model.Metadata
+import io.github.cekrem.domain.model.RichText
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
 import org.junit.jupiter.api.BeforeEach
@@ -123,11 +124,11 @@ class MarkdownContentParserTest {
 
             // Then
             assertEquals(
-                ContentBlock.Text("This is a paragraph of text."),
+                ContentBlock.Text(listOf(RichText.Plain("This is a paragraph of text."))),
                 result.blocks[0],
             )
             assertEquals(
-                ContentBlock.Text("This is another paragraph with *italic* and **bold** text."),
+                ContentBlock.Text(listOf(RichText.Plain("This is another paragraph with *italic* and **bold** text."))),
                 result.blocks[1],
             )
         }
@@ -314,6 +315,47 @@ class MarkdownContentParserTest {
                     caption = null,
                 ),
                 result.blocks[1],
+            )
+        }
+    }
+
+    @Test
+    fun `should parse text blocks with inline links correctly`() {
+        runTest {
+            // Given
+            val path = "/path/to/file.md"
+            val contentType = ContentType(name = "posts", listable = true)
+            val rawContent =
+                """
+                ---
+                title: Test Post
+                ---
+                This is a paragraph with an [inline link](https://example.com) and some more text.
+                """.trimIndent()
+
+            // When
+            val result =
+                contentParser.parse(
+                    rawContent = rawContent,
+                    path = path,
+                    type = contentType,
+                )
+
+            // Then
+            assertEquals(
+                ContentBlock.Text(
+                    segments =
+                        listOf(
+                            RichText.Plain("This is a paragraph with an "),
+                            RichText.InlineLink(
+                                text = "inline link",
+                                url = "https://example.com",
+                                external = true,
+                            ),
+                            RichText.Plain(" and some more text."),
+                        ),
+                ),
+                result.blocks[0],
             )
         }
     }

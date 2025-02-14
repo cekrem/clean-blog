@@ -5,7 +5,16 @@
         <h{{level}}>{{text}}</h{{level}}>
     {{/Heading}}
     {{#Text}}
-        <p>{{content}}</p>
+        <p>
+            {{#segments}}
+                {{#Plain}}
+                    {{text}}
+                {{/Plain}}
+                {{#InlineLink}}
+                    <a href="{{url}}" {{#external}}target="_blank"{{/external}}>{{text}}</a>
+                {{/InlineLink}}
+            {{/segments}}
+        </p>
     {{/Text}}
     {{#Code}}
         <pre><code class="{{language}}">{{content}}</code></pre>

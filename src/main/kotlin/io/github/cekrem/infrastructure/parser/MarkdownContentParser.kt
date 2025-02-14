@@ -5,6 +5,7 @@ import io.github.cekrem.domain.model.Content
 import io.github.cekrem.domain.model.ContentBlock
 import io.github.cekrem.domain.model.ContentType
 import io.github.cekrem.domain.model.Metadata
+import io.github.cekrem.domain.model.RichText
 import kotlinx.datetime.LocalDateTime
 import org.intellij.markdown.MarkdownElementTypes
 import org.intellij.markdown.ast.ASTNode
@@ -139,7 +140,7 @@ private class MarkdownBlockParser {
         node: ASTNode,
         markdownContent: String,
     ): ContentBlock {
-        // Check if paragraph contains a single link or image
+        // If it's a single link/image, handle as before
         if (node.children.size == 1) {
             when (node.children[0].type) {
                 MarkdownElementTypes.INLINE_LINK -> return parseLink(node.children[0], markdownContent)
@@ -147,9 +148,40 @@ private class MarkdownBlockParser {
             }
         }
 
-        return ContentBlock.Text(
-            content = markdownContent.substring(node.startOffset, node.endOffset).trim(),
-        )
+        // Parse text with potential inline links
+        val segments = mutableListOf<RichText>()
+        var plainText = ""
+
+        node.children.forEach { child ->
+            when (child.type) {
+                MarkdownElementTypes.INLINE_LINK -> {
+                    // Add accumulated text if any
+                    if (plainText.isNotEmpty()) {
+                        segments.add(RichText.Plain(plainText))
+                        plainText = ""
+                    }
+
+                    val link = parseLink(child, markdownContent)
+                    segments.add(
+                        RichText.InlineLink(
+                            text = link.text,
+                            url = link.url,
+                            external = link.external,
+                        ),
+                    )
+                }
+                else -> {
+                    plainText += markdownContent.substring(child.startOffset, child.endOffset)
+                }
+            }
+        }
+
+        // Add any remaining text
+        if (plainText.isNotEmpty()) {
+            segments.add(RichText.Plain(plainText))
+        }
+
+        return ContentBlock.Text(segments = segments)
     }
 
     private fun parseCodeBlock(

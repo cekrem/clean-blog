@@ -7,7 +7,7 @@ sealed interface ContentBlock {
     ) : ContentBlock
 
     data class Text(
-        val content: String,
+        val segments: List<RichText>,
     ) : ContentBlock
 
     data class Code(

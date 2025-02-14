@@ -13,7 +13,7 @@ internal fun createRssContentSource(feedUrl: String): ContentSource = RssContent
 
 internal fun createFileGateway(contentRoot: String): ContentSource =
     FileContentSource(
-        contentRoot,
+        contentRoot = contentRoot,
         parser = MarkdownContentParser(),
         extension = "md",
     )
