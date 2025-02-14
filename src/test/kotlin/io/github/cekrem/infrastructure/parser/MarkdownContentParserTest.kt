@@ -96,4 +96,222 @@ class MarkdownContentParserTest {
             assertEquals(result.blocks[5], ContentBlock.Heading(level = 6, text = "Level 6 heading"))
         }
     }
+
+    @Test
+    fun `should parse text content blocks correctly`() {
+        runTest {
+            // Given
+            val path = "/path/to/file.md"
+            val contentType = ContentType(name = "posts", listable = true)
+            val rawContent =
+                """
+                ---
+                title: Test Post
+                ---
+                This is a paragraph of text.
+                
+                This is another paragraph with *italic* and **bold** text.
+                """.trimIndent()
+
+            // When
+            val result =
+                contentParser.parse(
+                    rawContent = rawContent,
+                    path = path,
+                    type = contentType,
+                )
+
+            // Then
+            assertEquals(
+                ContentBlock.Text("This is a paragraph of text."),
+                result.blocks[0],
+            )
+            assertEquals(
+                ContentBlock.Text("This is another paragraph with *italic* and **bold** text."),
+                result.blocks[1],
+            )
+        }
+    }
+
+    @Test
+    fun `should parse code blocks correctly`() {
+        runTest {
+            // Given
+            val path = "/path/to/file.md"
+            val contentType = ContentType(name = "posts", listable = true)
+            val rawContent =
+                """
+                ---
+                title: Test Post
+                ---
+                ```kotlin
+                fun hello() {
+                    println("Hello, World!")
+                }
+                ```
+                
+                ```
+                Plain code block
+                ```
+                """.trimIndent()
+
+            // When
+            val result =
+                contentParser.parse(
+                    rawContent = rawContent,
+                    path = path,
+                    type = contentType,
+                )
+
+            // Then
+            assertEquals(
+                ContentBlock.Code(
+                    content = """fun hello() {
+                    println("Hello, World!")
+                }""",
+                    language = "kotlin",
+                ),
+                result.blocks[0],
+            )
+            assertEquals(
+                ContentBlock.Code(
+                    content = "Plain code block",
+                    language = null,
+                ),
+                result.blocks[1],
+            )
+        }
+    }
+
+    @Test
+    fun `should parse quote blocks correctly`() {
+        runTest {
+            // Given
+            val path = "/path/to/file.md"
+            val contentType = ContentType(name = "posts", listable = true)
+            val rawContent =
+                """
+                ---
+                title: Test Post
+                ---
+                > This is a quote
+                > with multiple lines
+                > -- Author Name
+                
+                > Simple quote without attribution
+                """.trimIndent()
+
+            // When
+            val result =
+                contentParser.parse(
+                    rawContent = rawContent,
+                    path = path,
+                    type = contentType,
+                )
+
+            // Then
+            assertEquals(
+                ContentBlock.Quote(
+                    content = "This is a quote with multiple lines",
+                    attribution = "Author Name",
+                ),
+                result.blocks[0],
+            )
+            assertEquals(
+                ContentBlock.Quote(
+                    content = "Simple quote without attribution",
+                    attribution = null,
+                ),
+                result.blocks[1],
+            )
+        }
+    }
+
+    @Test
+    fun `should parse link blocks correctly`() {
+        runTest {
+            // Given
+            val path = "/path/to/file.md"
+            val contentType = ContentType(name = "posts", listable = true)
+            val rawContent =
+                """
+                ---
+                title: Test Post
+                ---
+                [Internal Link](/internal/path)
+                
+                [External Link](https://example.com)
+                """.trimIndent()
+
+            // When
+            val result =
+                contentParser.parse(
+                    rawContent = rawContent,
+                    path = path,
+                    type = contentType,
+                )
+
+            // Then
+            assertEquals(
+                ContentBlock.Link(
+                    text = "Internal Link",
+                    url = "/internal/path",
+                    external = false,
+                ),
+                result.blocks[0],
+            )
+            assertEquals(
+                ContentBlock.Link(
+                    text = "External Link",
+                    url = "https://example.com",
+                    external = true,
+                ),
+                result.blocks[1],
+            )
+        }
+    }
+
+    @Test
+    fun `should parse image blocks correctly`() {
+        runTest {
+            // Given
+            val path = "/path/to/file.md"
+            val contentType = ContentType(name = "posts", listable = true)
+            val rawContent =
+                """
+                ---
+                title: Test Post
+                ---
+                ![Alt text](/path/to/image.jpg "Image caption")
+                
+                ![Simple image](/path/to/simple.jpg)
+                """.trimIndent()
+
+            // When
+            val result =
+                contentParser.parse(
+                    rawContent = rawContent,
+                    path = path,
+                    type = contentType,
+                )
+
+            // Then
+            assertEquals(
+                ContentBlock.Image(
+                    url = "/path/to/image.jpg",
+                    alt = "Alt text",
+                    caption = "Image caption",
+                ),
+                result.blocks[0],
+            )
+            assertEquals(
+                ContentBlock.Image(
+                    url = "/path/to/simple.jpg",
+                    alt = "Simple image",
+                    caption = null,
+                ),
+                result.blocks[1],
+            )
+        }
+    }
 }

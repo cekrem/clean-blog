@@ -50,7 +50,7 @@ internal class FileContentSource(
                 // Construct the relative path by combining type name and file name without extension
                 val relativePath = "${type.name}/${file.nameWithoutExtension}"
                 getByPath(relativePath)
-            }.mapNotNull {
+            }.map {
                 ContentSummary(
                     title = it.title,
                     path = it.path,
