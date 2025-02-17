@@ -1,13 +1,7 @@
 package io.github.cekrem.acceptance.features
 
-import io.github.cekrem.application.usecase.GetContentUseCase
-import io.github.cekrem.application.usecase.GetListableContentTypes
-import io.github.cekrem.application.usecase.ListContentsByTypeUseCase
-import io.github.cekrem.infrastructure.contentsource.FileContentSource
-import io.github.cekrem.infrastructure.parser.MarkdownContentParser
-import io.github.cekrem.infrastructure.web.Server
-import io.github.cekrem.infrastructure.web.ServerConfig
-import io.github.cekrem.infrastructure.web.internal.presenter.MustacheContentPresenter
+import TestFixtures
+import io.github.cekrem.acceptance.support.TestApplication
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.request.get
@@ -16,120 +10,74 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.withCharset
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.io.TempDir
-import java.nio.file.Path
-import kotlin.io.path.createDirectories
-import kotlin.io.path.writeText
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class ServeMarkdownBlogPostFeatureTest {
-    private val markdownPost =
-        """
-        ---
-        title: Hello World
-        description: My first blog post
-        publishedAt: 2024-01-01T12:00:00
-        ---
-        
-        This is a paragraph.
-        
-        ## Heading2
-        
-        ```kotlin
-        fun hello() = "world"
-        ```
-        """.trimIndent()
-
-    private val htmlPostBody =
-        """
-        <p>This is a paragraph.</p>
-        <h2>Heading2</h2>
-        <pre>
-            <code class="language-kotlin">
-                fun hello() = "world"
-            </code>
-        </pre>
-        """.trimIndent()
-
-    private val serverConfig = ServerConfig(debug = true)
     private val client = HttpClient(CIO)
-
-    @TempDir
-    private lateinit var tempDir: Path
-
-    private lateinit var server: Server
+    private lateinit var application: TestApplication
 
     @BeforeEach
     fun setUp() {
-        // Write real markdown files
-        tempDir.resolve("posts").createDirectories()
-        tempDir.resolve("posts/hello-world.md").writeText(markdownPost)
-
-        initializeServer()
-        server.start()
-        runBlocking { server.ensureReady() }
+        application = TestApplication.create()
+        application.start()
     }
 
     @AfterEach
     fun tearDown() {
         client.close()
-        server.stop()
-
-        // Clean up actual files
-        this.tempDir.toFile().deleteRecursively()
+        application.stop()
     }
 
     @Test
-    fun `should serve blog post with proper formatting`() =
+    fun `should convert and serve markdown blog posts as properly formatted HTML pages`() =
         runTest {
-            // Make actual HTTP request
-            val response = client.get("http://localhost:${serverConfig.port}/posts/hello-world")
+            TestFixtures.blogPosts.forEach { post ->
+                // Given a blog post exists
+                application.givenBlogPost(
+                    slug = post,
+                    content = TestFixtures.readMarkdownPost(post),
+                )
 
-            // Verify HTTP response
-            assertEquals(HttpStatusCode.OK, response.status)
-            assertEquals(ContentType.Text.Html.withCharset(Charsets.UTF_8), response.contentType())
+                // When requesting the blog post
+                val response = client.get("${application.baseUrl}/posts/$post")
 
-            // Verify actual HTML content
-            val htmlText = response.bodyAsText()
-            assertEquals(htmlPostBody, htmlText)
+                // Then it should return properly formatted HTML
+                assertEquals(HttpStatusCode.OK, response.status)
+                assertEquals(
+                    ContentType.Text.Html.withCharset(Charsets.UTF_8),
+                    response.contentType(),
+                )
+                assertEquals(TestFixtures.readHtmlFixture(post), response.bodyAsText())
+            }
         }
 
     @Test
-    fun `should generate RSS feed from actual content`() =
+    fun `should return 404 when blog post does not exist`() =
         runTest {
-            // Make actual HTTP request to RSS endpoint
-            val response = client.get("http://localhost:${serverConfig.port}/feed.xml")
+            // When requesting a non-existent blog post
+            val response = client.get("${application.baseUrl}/posts/non-existent")
 
-            // Verify real RSS output
-            assertEquals(HttpStatusCode.OK, response.status)
-            assertEquals(ContentType.Application.Rss.withCharset(Charsets.UTF_8), response.contentType())
-
-            val rssContent = response.bodyAsText()
-            assertTrue(rssContent.contains("<title>Hello World</title>"))
-            assertTrue(rssContent.contains("<pubDate>2024-01-01T12:00:00</pubDate>"))
+            // Then it should return 404
+            assertEquals(HttpStatusCode.NotFound, response.status)
         }
 
-    private fun initializeServer() {
-        val contentSource =
-            FileContentSource(
-                contentRoot = tempDir.toString(),
-                parser = MarkdownContentParser(),
-                extension = "md",
+    @Test
+    fun `should return 500 when markdown is malformed`() =
+        runTest {
+            // Given a blog post with malformed markdown
+            application.givenBlogPost(
+                slug = "malformed",
+                content = "Invalid --- frontmatter",
             )
 
-        server =
-            Server(
-                getContent = GetContentUseCase(contentSource),
-                listContents = ListContentsByTypeUseCase(contentSource),
-                getListableContentTypes = GetListableContentTypes(contentSource),
-                contentPresenter = MustacheContentPresenter(),
-                config = serverConfig,
-            )
-    }
+            // When requesting the blog post
+            val response = client.get("${application.baseUrl}/posts/malformed")
+
+            // Then it should return 500
+            assertEquals(HttpStatusCode.InternalServerError, response.status)
+        }
 }
