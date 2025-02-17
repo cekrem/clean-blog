@@ -1,37 +1,48 @@
-<h1>{{title}}</h1>
-<p>{{metadata.description}}</p>
-{{#blocks}}
-    {{#Heading}}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{title}}</title>
+    <meta charset="utf-8" />
+    {{#metadata.description}}
+    <meta content="{{.}}" name="description" />
+    {{/metadata.description}}
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+</head>
+<body>
+    <h1>{{title}}</h1>
+
+    {{#blocks}}
+        {{#Heading}}
         <h{{level}}>{{text}}</h{{level}}>
-    {{/Heading}}
-    {{#Text}}
+        {{/Heading}}
+
+        {{#Text}}
         <p>
             {{#segments}}
-                {{#Plain}}
-                    {{text}}
-                {{/Plain}}
-                {{#InlineLink}}
-                    <a href="{{url}}" {{#external}}target="_blank"{{/external}}>{{text}}</a>
-                {{/InlineLink}}
+                {{#Plain}}{{text}}{{/Plain}}
+                {{#InlineLink}}<a href="{{url}}">{{text}}</a>{{/InlineLink}}
             {{/segments}}
         </p>
-    {{/Text}}
-    {{#Code}}
-        <pre><code class="{{language}}">{{content}}</code></pre>
-    {{/Code}}
-    {{#Quote}}
-        <blockquote>{{content}}
-            <footer>{{attribution}}</footer>
-        </blockquote>
-    {{/Quote}}
-    {{#Link}}
-        <a href="{{url}}" {{#external}}target="_blank"{{/external}}>{{text}}</a>
-    {{/Link}}
-    {{#Image}}
-        <figure>
-            <img src="{{url}}" alt="{{alt}}">
-            {{#caption}}
-                <figcaption>{{caption}}</figcaption>{{/caption}}
-        </figure>
-    {{/Image}}
-{{/blocks}}
+        {{/Text}}
+
+        {{#List}}
+        <ul>
+            {{#items}}
+            <li>{{.}}</li>
+            {{/items}}
+        </ul>
+        {{/List}}
+
+        {{#Code}}
+        <pre><code{{#language}} class="language-{{.}}"{{/language}}>{{content}}</code></pre>
+        {{/Code}}
+
+        {{#TextWithLink}}
+        <p>
+            {{text}}
+            <a href="{{url}}">{{linkText}}</a>.
+        </p>
+        {{/TextWithLink}}
+    {{/blocks}}
+</body>
+</html>

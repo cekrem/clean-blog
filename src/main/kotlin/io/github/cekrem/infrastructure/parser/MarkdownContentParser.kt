@@ -37,7 +37,9 @@ internal class MarkdownContentParser : ContentParser {
     }
 
     private fun parseFrontMatter(rawContent: String): FrontMatter {
-        val rawFrontMatter = rawContent.split("---\n").getOrNull(1) ?: throw InvalidFrontMatterException()
+        val rawFrontMatter =
+            rawContent.split("---\n").getOrNull(1)
+                ?: throw InvalidFrontMatterException("Could not determine front matter start/end: $rawContent")
         val entries =
             rawFrontMatter.split("\n").associate {
                 it.substringBefore(":").trim() to
@@ -45,15 +47,19 @@ internal class MarkdownContentParser : ContentParser {
             }
 
         return FrontMatter(
-            title = entries["title"] ?: throw InvalidFrontMatterException(),
+            title = entries["title"] ?: throw InvalidFrontMatterException("Could not find title"),
             description = entries["description"],
             tags =
-                entries["tags"]
-                    ?.removeSurrounding("[", "]")
-                    ?.split(Regex("\\s*,\\s*"))
-                    ?.map { it.removeSurrounding("\"") }
-                    ?.map { it.removeSurrounding("'") }
-                    ?: emptyList(),
+                entries["tags"]?.let { tagString ->
+                    tagString
+                        .trim()
+                        .removeSurrounding("[", "]")
+                        .split(",")
+                        .map { it.trim() }
+                        .map { it.removeSurrounding("\"") }
+                        .map { it.removeSurrounding("'") }
+                        .filter { it.isNotEmpty() }
+                } ?: emptyList(),
             draft = entries["draft"]?.toBoolean() == true,
             publishedAt = entries["publishedAt"]?.let(LocalDateTime::parse),
             updatedAt = entries["updatedAt"]?.let(LocalDateTime::parse),
@@ -170,6 +176,7 @@ private class MarkdownBlockParser {
                         ),
                     )
                 }
+
                 else -> {
                     plainText += markdownContent.substring(child.startOffset, child.endOffset)
                 }
@@ -287,4 +294,7 @@ private class MarkdownBlockParser {
     }
 }
 
-class InvalidFrontMatterException : Exception()
+class InvalidFrontMatterException : Exception {
+    constructor() : super()
+    constructor(msg: String) : super(msg)
+}

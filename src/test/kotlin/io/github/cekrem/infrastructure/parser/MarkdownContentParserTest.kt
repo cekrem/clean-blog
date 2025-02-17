@@ -23,7 +23,7 @@ class MarkdownContentParserTest {
     fun `should parse yaml front matter`() {
         runTest {
             // Given
-            val path = "/path/to/file.md"
+            val path = "posts/file.md.md"
             val contentType = ContentType(name = "posts", listable = true)
             val rawContent =
                 """
@@ -62,10 +62,40 @@ class MarkdownContentParserTest {
     }
 
     @Test
+    fun `should parse tags with non-standard whitespace`() {
+        runTest {
+            // Given
+            val path = "posts/file.md.md"
+            val contentType = ContentType(name = "posts", listable = true)
+            val rawContent =
+                """
+                ---
+                title: whatever
+                description: whatever
+                tags: [   "foo",   "bar", "baz"       ]
+                ---
+                # Some content that we ignore in this test
+                """.trimIndent()
+            val expectedTags = listOf("foo", "bar", "baz")
+
+            // When
+            val result =
+                contentParser.parse(
+                    rawContent = rawContent,
+                    path = path,
+                    type = contentType,
+                )
+
+            // Then
+            assertEquals(expectedTags, result.metadata.tags)
+        }
+    }
+
+    @Test
     fun `should parse heading content blocks correctly`() {
         runTest {
             // Given
-            val path = "/path/to/file.md"
+            val path = "posts/file.md.md"
             val contentType = ContentType(name = "posts", listable = true)
             val rawContent =
                 """
@@ -102,7 +132,7 @@ class MarkdownContentParserTest {
     fun `should parse text content blocks correctly`() {
         runTest {
             // Given
-            val path = "/path/to/file.md"
+            val path = "posts/file.md.md"
             val contentType = ContentType(name = "posts", listable = true)
             val rawContent =
                 """
@@ -138,7 +168,7 @@ class MarkdownContentParserTest {
     fun `should parse code blocks correctly`() {
         runTest {
             // Given
-            val path = "/path/to/file.md"
+            val path = "posts/file.md.md"
             val contentType = ContentType(name = "posts", listable = true)
             val rawContent =
                 """
@@ -191,7 +221,7 @@ class MarkdownContentParserTest {
     fun `should parse quote blocks correctly`() {
         runTest {
             // Given
-            val path = "/path/to/file.md"
+            val path = "posts/file.md.md"
             val contentType = ContentType(name = "posts", listable = true)
             val rawContent =
                 """
@@ -235,7 +265,7 @@ class MarkdownContentParserTest {
     fun `should parse link blocks correctly`() {
         runTest {
             // Given
-            val path = "/path/to/file.md"
+            val path = "posts/file.md.md"
             val contentType = ContentType(name = "posts", listable = true)
             val rawContent =
                 """
@@ -279,7 +309,7 @@ class MarkdownContentParserTest {
     fun `should parse image blocks correctly`() {
         runTest {
             // Given
-            val path = "/path/to/file.md"
+            val path = "posts/file.md.md"
             val contentType = ContentType(name = "posts", listable = true)
             val rawContent =
                 """
@@ -323,7 +353,7 @@ class MarkdownContentParserTest {
     fun `should parse text blocks with inline links correctly`() {
         runTest {
             // Given
-            val path = "/path/to/file.md"
+            val path = "posts/file.md.md"
             val contentType = ContentType(name = "posts", listable = true)
             val rawContent =
                 """

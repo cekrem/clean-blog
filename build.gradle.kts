@@ -37,6 +37,32 @@ dependencies {
     testImplementation(libs.ktor.client.content.negotiation)
 }
 
-tasks.test {
-    useJUnitPlatform()
+tasks {
+    test {
+        useJUnitPlatform()
+        description = "Runs all tests including unit and acceptance tests"
+        group = "verification"
+    }
+
+    register<Test>("unitTest") {
+        useJUnitPlatform {
+            filter {
+                excludeTestsMatching("*.acceptance.*")
+            }
+        }
+        description = "Runs unit tests"
+        group = "verification"
+    }
+
+    register<Test>("acceptanceTest") {
+        useJUnitPlatform {
+            filter {
+                includeTestsMatching("*.acceptance.*")
+            }
+        }
+        description = "Runs acceptance tests"
+        group = "verification"
+
+        mustRunAfter(test)
+    }
 }

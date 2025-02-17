@@ -27,13 +27,13 @@ class GetContentUseCaseTest {
     fun `should return content when it exists`() =
         runTest {
             // Given
-            val path = "test/path"
+            val path = "tests/path"
             val expectedContent =
                 Content(
                     path = path,
                     title = "Test Content",
                     blocks = emptyList(),
-                    type = ContentType("test", listable = false),
+                    type = ContentType("tests", listable = false),
                     metadata = Metadata(),
                 )
             coEvery { contentSource.getByPath(path) } returns expectedContent
