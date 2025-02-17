@@ -4,9 +4,11 @@ import io.github.cekrem.application.parser.ContentParser
 import io.github.cekrem.domain.model.Content
 import io.github.cekrem.domain.model.ContentType
 import io.github.cekrem.domain.model.Metadata
+import io.mockk.clearMocks
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.datetime.LocalDateTime
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -34,6 +36,12 @@ class FileContentSourceTest {
                 parser = contentParser,
                 extension = extension,
             )
+    }
+
+    @AfterEach
+    fun tearDown() {
+        clearMocks(contentParser)
+        this.tempDir.toFile().deleteRecursively()
     }
 
     private fun createTestFile(

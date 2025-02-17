@@ -4,9 +4,9 @@ import io.github.cekrem.application.usecase.GetContentUseCase
 import io.github.cekrem.application.usecase.GetListableContentTypes
 import io.github.cekrem.application.usecase.ListContentsByTypeUseCase
 import io.github.cekrem.infrastructure.factory.createFileGateway
+import io.github.cekrem.infrastructure.web.Server
 import io.github.cekrem.infrastructure.web.ServerConfig
 import io.github.cekrem.infrastructure.web.internal.presenter.MustacheContentPresenter
-import io.github.cekrem.infrastructure.web.startServer
 
 fun main(args: Array<String>) {
     val debug = args.contains("--debug")
@@ -27,11 +27,11 @@ fun main(args: Array<String>) {
             debug = debug,
         )
 
-    startServer(
+    Server(
         getContent = getContent,
         listContents = listContents,
         getListableContentTypes = getListableContentTypes,
         contentPresenter = contentPresenter,
         config = serverConfig,
-    )
+    ).runBlocking()
 }
