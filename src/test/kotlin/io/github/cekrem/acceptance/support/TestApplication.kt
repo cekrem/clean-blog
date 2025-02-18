@@ -1,5 +1,6 @@
 package io.github.cekrem.acceptance.support
 
+import io.github.cekrem.adapter.controller.ContentController
 import io.github.cekrem.application.usecase.GetContentUseCase
 import io.github.cekrem.application.usecase.GetListableContentTypes
 import io.github.cekrem.application.usecase.ListContentsByTypeUseCase
@@ -52,11 +53,16 @@ class TestApplication private constructor() {
                 extension = "md",
             )
 
+        val contentController =
+            ContentController(
+                getContent = GetContentUseCase(contentSource),
+                listContents = ListContentsByTypeUseCase(contentSource),
+                getListableContentTypes = GetListableContentTypes(contentSource),
+                contentPresenter = MustacheContentPresenter(),
+            )
+
         return Server(
-            getContent = GetContentUseCase(contentSource),
-            listContents = ListContentsByTypeUseCase(contentSource),
-            getListableContentTypes = GetListableContentTypes(contentSource),
-            contentPresenter = MustacheContentPresenter(),
+            contentController = contentController,
             config = config,
         )
     }

@@ -1,5 +1,6 @@
 package io.github.cekrem
 
+import io.github.cekrem.adapter.controller.ContentController
 import io.github.cekrem.application.usecase.GetContentUseCase
 import io.github.cekrem.application.usecase.GetListableContentTypes
 import io.github.cekrem.application.usecase.ListContentsByTypeUseCase
@@ -18,8 +19,15 @@ fun main(args: Array<String>) {
     val listContents = ListContentsByTypeUseCase(contentSource)
     val getListableContentTypes = GetListableContentTypes(contentSource)
 
-    // Create content presenter
+    // Create controller / presenter
     val contentPresenter = MustacheContentPresenter()
+    val contentController =
+        ContentController(
+            getContent = getContent,
+            listContents = listContents,
+            getListableContentTypes = getListableContentTypes,
+            contentPresenter = contentPresenter,
+        )
 
     val serverConfig =
         ServerConfig(
@@ -28,10 +36,7 @@ fun main(args: Array<String>) {
         )
 
     Server(
-        getContent = getContent,
-        listContents = listContents,
-        getListableContentTypes = getListableContentTypes,
-        contentPresenter = contentPresenter,
+        contentController = contentController,
         config = serverConfig,
     ).runBlocking()
 }

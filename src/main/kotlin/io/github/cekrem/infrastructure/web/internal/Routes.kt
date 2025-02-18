@@ -1,9 +1,10 @@
 package io.github.cekrem.infrastructure.web.internal
 
-import io.github.cekrem.infrastructure.web.internal.controller.ContentController
+import io.github.cekrem.adapter.controller.ContentController
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.response.respond
+import io.ktor.server.response.respondNullable
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.RoutingCall
 import io.ktor.server.routing.get
 import kotlinx.coroutines.runBlocking
 
@@ -17,25 +18,29 @@ internal class Routes(
             }
 
         get("/health") {
-            contentController.handleHealthCheck(call)
+            call.handleResponse(contentController.healthCheckResponse())
         }
 
         // HTML Routes
         get("/") {
-            contentController.handleIndex(call)
+            call.handleResponse(contentController.getIndexResponse())
         }
 
         listableContentTypes.forEach { type ->
             get("/${type.name}") {
-                contentController.handleListContents(call, type)
+                call.handleResponse(contentController.getListContentsResponse(type))
             }
         }
 
         get("/{type}/{slug}") {
-            val type = call.parameters["type"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            val slug = call.parameters["slug"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val type = call.parameters["type"]
+            val slug = call.parameters["slug"]
 
-            contentController.handleGetContent(call, "$type/$slug")
+            call.handleResponse(contentController.getContentResponse(type, slug))
         }
     }
+}
+
+private suspend inline fun <reified T> RoutingCall.handleResponse(response: ContentController.Response<T>) {
+    respondNullable(status = HttpStatusCode(response.statusCode, ""), message = response.body)
 }
