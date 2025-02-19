@@ -31,6 +31,6 @@ data class Metadata(
 
     companion object {
         const val MAX_DESCRIPTION_LENGTH = 500
-        private val TAG_PATTERN = Regex("^[a-z0-9-]{2,30}$")
+        private val TAG_PATTERN = Regex("^[a-z0-9][a-z0-9- ]{0,28}[a-z0-9]$")
     }
 }

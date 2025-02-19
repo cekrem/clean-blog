@@ -21,8 +21,8 @@ internal class MarkdownContentParser : ContentParser {
         val frontMatter = parseFrontMatter(rawContent)
         val markdownContent =
             rawContent
-                .substringAfter("---\n", "")
-                .substringAfter("---\n", "")
+                .substringAfter(frontMatter.delimiter, "")
+                .substringAfter(frontMatter.delimiter, "")
 
         val tree = markdownTreeParser.buildMarkdownTreeFromString(markdownContent)
         val blocks = blockParser.parseBlocks(tree, markdownContent)
@@ -37,16 +37,22 @@ internal class MarkdownContentParser : ContentParser {
     }
 
     private fun parseFrontMatter(rawContent: String): FrontMatter {
+        val delimiter =
+            delimiters.firstOrNull { rawContent.startsWith(it) }
+                ?: throw InvalidFrontMatterException("Could not determine front matter start/end: $rawContent")
+
         val rawFrontMatter =
-            rawContent.split("---\n").getOrNull(1)
+            rawContent.split("$delimiter").getOrNull(1)
                 ?: throw InvalidFrontMatterException("Could not determine front matter start/end: $rawContent")
         val entries =
-            rawFrontMatter.split("\n").associate {
-                it.substringBefore(":").trim() to
-                    it.substringAfter(":").trim()
-            }
+            rawFrontMatter
+                .split("\n")
+                .map { it.split(Regex("[:=]"), 2) }
+                .filter { it.size == 2 }
+                .associate { (key, value) -> key.trim() to value.trim().removeSurrounding("\"") }
 
         return FrontMatter(
+            delimiter = delimiter,
             title = entries["title"] ?: throw InvalidFrontMatterException("Could not find title"),
             description = entries["description"],
             tags =
@@ -67,6 +73,7 @@ internal class MarkdownContentParser : ContentParser {
     }
 
     private data class FrontMatter(
+        internal val delimiter: String,
         val title: String,
         val description: String?,
         val tags: List<String> = emptyList(),
@@ -85,6 +92,7 @@ internal class MarkdownContentParser : ContentParser {
     }
 
     private companion object {
+        val delimiters = listOf("---\n", "+++\n")
         val markdownFlavor = CommonMarkFlavourDescriptor()
         val markdownTreeParser = MarkdownParser(markdownFlavor)
         val blockParser = MarkdownBlockParser()

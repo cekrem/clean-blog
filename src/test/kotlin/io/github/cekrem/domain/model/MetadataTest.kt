@@ -23,7 +23,7 @@ class MetadataTest {
         // Given
         val invalidTags =
             listOf(
-                "Tag with spaces",
+                "Tag with trailing end ",
                 "UPPERCASE",
                 "special-chars!",
                 "",
