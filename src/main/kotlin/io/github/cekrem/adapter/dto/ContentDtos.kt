@@ -10,26 +10,14 @@ typealias ContentSummaryDto = Map<String, String>
 data class ContentDto(
     val title: String,
     val description: String,
-    val blocks: List<ContentBlockWrapperDto>,
+    val blocks: List<ContentBlockDto>,
 )
 
 fun Content.dto(): ContentDto =
     ContentDto(
         title = this.title,
         description = this.metadata.description ?: "",
-        blocks =
-            this.blocks.map { block ->
-                mapOf(
-                    when (block) {
-                        is ContentBlock.Heading -> "Heading"
-                        is ContentBlock.Text -> "Text"
-                        is ContentBlock.Code -> "Code"
-                        is ContentBlock.Quote -> "Quote"
-                        is ContentBlock.Link -> "Link"
-                        is ContentBlock.Image -> "Image"
-                    } to block,
-                )
-            },
+        blocks = this.blocks.map { it.toDto() },
     )
 
 fun List<ContentSummary>.dto(): List<ContentSummaryDto> =

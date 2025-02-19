@@ -9,6 +9,7 @@ import io.github.cekrem.domain.model.RichText
 import kotlinx.datetime.LocalDateTime
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ContentDtosTest {
     @Test
@@ -33,14 +34,22 @@ class ContentDtosTest {
         // Then
         assertEquals("Test Post", result.title)
         assertEquals("Test description", result.description)
+        assertEquals(2, result.blocks.size)
 
-        val blocks = result.blocks as List<*>
-        assertEquals(2, blocks.size)
+        with(result.blocks[0]) {
+            assertTrue(isHeading)
+            assertEquals("Hello", text)
+            assertEquals(1, level)
+        }
 
-        val blockWrapper = blocks[0] as Map<*, *>
-        val heading = blockWrapper["Heading"] as ContentBlock.Heading
-        assertEquals("Hello", heading.text)
-        assertEquals(1, heading.level)
+        with(result.blocks[1]) {
+            assertTrue(isText)
+            assertEquals(1, segments?.size)
+            segments?.get(0)?.let {
+                assertTrue(it.isPlain)
+                assertEquals("World", it.text)
+            }
+        }
     }
 
     @Test

@@ -52,12 +52,33 @@ class MustacheContentPresenterTest {
         val result = presenter.presentContent(content)
 
         // Then
+        assertTrue(result is MustacheContent)
         assertEquals("content.mustache", result.template)
 
         val data = result.model as ContentDto
         assertEquals("Test Post", data.title)
         assertEquals("Test description", data.description)
         assertEquals(2, data.blocks.size)
+
+        with(data.blocks[0]) {
+            assertTrue(isHeading)
+            assertEquals("Introduction", text)
+            assertEquals(2, level)
+        }
+
+        with(data.blocks[1]) {
+            assertTrue(isText)
+            assertEquals(2, segments?.size)
+            segments?.get(0)?.let {
+                assertTrue(it.isPlain)
+                assertEquals("Hello ", it.text)
+            }
+            segments?.get(1)?.let {
+                assertTrue(it.isInlineLink)
+                assertEquals("world", it.text)
+                assertEquals("https://example.com", it.url)
+            }
+        }
     }
 
     @Test
@@ -118,6 +139,11 @@ class MustacheContentPresenterTest {
         assertTrue(result is MustacheContent)
         val data = result.model as ContentDto
         assertEquals(6, data.blocks.size)
+
+        with(data.blocks[0]) { assertTrue(isHeading) }
+        with(data.blocks[1]) { assertTrue(isText) }
+        with(data.blocks[2]) { assertTrue(isCode) }
+        with(data.blocks[4]) { assertTrue(isTextWithLink) }
     }
 
     @Test
@@ -148,10 +174,14 @@ class MustacheContentPresenterTest {
         val data = result.model as ContentDto
         assertEquals(1, data.blocks.size)
 
-        val blockWrapper = data.blocks[0]
-        assertTrue(blockWrapper.containsKey("Text"))
-        val block = blockWrapper["Text"] as ContentBlock.Text
-        assertEquals("This is a simple paragraph of text.", block.segments[0].text)
+        with(data.blocks[0]) {
+            assertTrue(isText)
+            assertEquals(1, segments?.size)
+            segments?.get(0)?.let {
+                assertTrue(it.isPlain)
+                assertEquals("This is a simple paragraph of text.", it.text)
+            }
+        }
     }
 
     @Test
@@ -188,18 +218,25 @@ class MustacheContentPresenterTest {
         val data = result.model as ContentDto
         assertEquals(1, data.blocks.size)
 
-        val blockWrapper = data.blocks[0]
-        assertTrue(blockWrapper.containsKey("Text"))
-        val block = blockWrapper["Text"] as ContentBlock.Text
+        with(data.blocks[0]) {
+            assertTrue(isText)
+            assertEquals(3, segments?.size)
 
-        assertEquals(3, block.segments.size)
-        assertEquals("Here is some text with a ", (block.segments[0] as RichText.Plain).text)
+            segments?.get(0)?.let {
+                assertTrue(it.isPlain)
+                assertEquals("Here is some text with a ", it.text)
+            }
 
-        val link = block.segments[1] as RichText.InlineLink
-        assertEquals("link", link.text)
-        assertEquals("https://example.com", link.url)
-        assertTrue(link.external)
+            segments?.get(1)?.let {
+                assertTrue(it.isInlineLink)
+                assertEquals("link", it.text)
+                assertEquals("https://example.com", it.url)
+            }
 
-        assertEquals(" in the middle.", (block.segments[2] as RichText.Plain).text)
+            segments?.get(2)?.let {
+                assertTrue(it.isPlain)
+                assertEquals(" in the middle.", it.text)
+            }
+        }
     }
 }

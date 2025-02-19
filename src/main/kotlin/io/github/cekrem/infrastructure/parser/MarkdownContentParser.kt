@@ -73,7 +73,7 @@ internal class MarkdownContentParser : ContentParser {
     }
 
     private data class FrontMatter(
-        internal val delimiter: String,
+        val delimiter: String,
         val title: String,
         val description: String?,
         val tags: List<String> = emptyList(),

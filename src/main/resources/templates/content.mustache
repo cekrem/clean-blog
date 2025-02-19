@@ -3,46 +3,46 @@
 <head>
     <title>{{title}}</title>
     <meta charset="utf-8" />
-    {{#metadata.description}}
+    {{#description}}
     <meta content="{{.}}" name="description" />
-    {{/metadata.description}}
+    {{/description}}
     <meta content="width=device-width, initial-scale=1" name="viewport" />
 </head>
 <body>
     <h1>{{title}}</h1>
 
     {{#blocks}}
-        {{#Heading}}
+        {{#isHeading}}
         <h{{level}}>{{text}}</h{{level}}>
-        {{/Heading}}
+        {{/isHeading}}
 
-        {{#Text}}
+        {{#isText}}
         <p>
             {{#segments}}
-                {{#Plain}}{{.}}{{/Plain}}
-                {{#InlineLink}}<a href="{{url}}">{{text}}</a>{{/InlineLink}}
+                {{#isPlain}}{{text}}{{/isPlain}}
+                {{#isInlineLink}}<a href="{{url}}">{{text}}</a>{{/isInlineLink}}
             {{/segments}}
         </p>
-        {{/Text}}
+        {{/isText}}
 
-        {{#List}}
+        {{#isList}}
         <ul>
             {{#items}}
             <li>{{.}}</li>
             {{/items}}
         </ul>
-        {{/List}}
+        {{/isList}}
 
-        {{#Code}}
+        {{#isCode}}
         <pre><code{{#language}} class="language-{{.}}"{{/language}}>{{content}}</code></pre>
-        {{/Code}}
+        {{/isCode}}
 
-        {{#TextWithLink}}
+        {{#isTextWithLink}}
         <p>
             {{text}}
             <a href="{{url}}">{{linkText}}</a>.
         </p>
-        {{/TextWithLink}}
+        {{/isTextWithLink}}
     {{/blocks}}
 </body>
 </html>
