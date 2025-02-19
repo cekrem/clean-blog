@@ -11,24 +11,30 @@ import kotlinx.coroutines.runBlocking
 internal class Routes(
     private val contentController: ContentController,
 ) {
-    fun Route.configureRoutes() {
+    fun Route.configureRoutes(debug: Boolean = false) {
+        fun debugLog(output: Any) {
+            if (debug) {
+                println("DEBUG: $output")
+            }
+        }
+
         val listableContentTypes =
             runBlocking {
-                contentController.getListableContentTypes()
+                contentController.getListableContentTypes().also(::debugLog)
             }
 
         get("/health") {
-            call.handleResponse(contentController.healthCheckResponse())
+            call.handleResponse(contentController.healthCheckResponse().also(::debugLog))
         }
 
         // HTML Routes
         get("/") {
-            call.handleResponse(contentController.getIndexResponse())
+            call.handleResponse(contentController.getIndexResponse().also(::debugLog))
         }
 
         listableContentTypes.forEach { type ->
             get("/${type.name}") {
-                call.handleResponse(contentController.getListContentsResponse(type))
+                call.handleResponse(contentController.getListContentsResponse(type).also(::debugLog))
             }
         }
 
@@ -36,7 +42,7 @@ internal class Routes(
             val type = call.parameters["type"]
             val slug = call.parameters["slug"]
 
-            call.handleResponse(contentController.getContentResponse(type, slug))
+            call.handleResponse(contentController.getContentResponse(type, slug).also(::debugLog))
         }
     }
 }

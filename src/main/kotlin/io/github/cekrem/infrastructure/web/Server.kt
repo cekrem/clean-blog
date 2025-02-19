@@ -11,8 +11,12 @@ import kotlinx.coroutines.withTimeout
 
 class Server(
     contentController: ContentController,
-    config: ServerConfig = ServerConfig(),
+    private val config: ServerConfig = ServerConfig(),
 ) {
+    init {
+        println("DEBUG MODE: ${config.debug}")
+    }
+
     private val embeddedServer =
         embeddedServer(
             Netty,
@@ -23,10 +27,12 @@ class Server(
 
             val routes = Routes(contentController)
 
-            routing { routes.apply { configureRoutes() } }
+            routing { routes.apply { configureRoutes(config.debug) } }
         }
 
-    fun runBlocking() = embeddedServer.start(true)
+    fun runBlocking() {
+        embeddedServer.start(true)
+    }
 
     fun start() {
         embeddedServer.start(wait = false)

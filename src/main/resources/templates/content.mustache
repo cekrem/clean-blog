@@ -19,7 +19,7 @@
         {{#Text}}
         <p>
             {{#segments}}
-                {{#Plain}}{{text}}{{/Plain}}
+                {{#Plain}}{{.}}{{/Plain}}
                 {{#InlineLink}}<a href="{{url}}">{{text}}</a>{{/InlineLink}}
             {{/segments}}
         </p>

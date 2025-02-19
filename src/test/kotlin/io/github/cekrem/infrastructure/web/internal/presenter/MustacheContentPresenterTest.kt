@@ -119,4 +119,87 @@ class MustacheContentPresenterTest {
         val data = result.model as ContentDto
         assertEquals(6, data.blocks.size)
     }
+
+    @Test
+    fun `should properly render plain text content`() {
+        // Given
+        val content =
+            Content(
+                path = "posts/test-post",
+                title = "Test Post",
+                blocks =
+                    listOf(
+                        ContentBlock.Text(
+                            segments =
+                                listOf(
+                                    RichText.Plain("This is a simple paragraph of text."),
+                                ),
+                        ),
+                    ),
+                type = ContentType("posts", listable = true),
+                metadata = Metadata(),
+            )
+
+        // When
+        val result = presenter.presentContent(content)
+
+        // Then
+        assertTrue(result is MustacheContent)
+        val data = result.model as ContentDto
+        assertEquals(1, data.blocks.size)
+
+        val blockWrapper = data.blocks[0]
+        assertTrue(blockWrapper.containsKey("Text"))
+        val block = blockWrapper["Text"] as ContentBlock.Text
+        assertEquals("This is a simple paragraph of text.", block.segments[0].text)
+    }
+
+    @Test
+    fun `should render mixed content with plain text and links`() {
+        // Given
+        val content =
+            Content(
+                path = "posts/test-post",
+                title = "Test Post",
+                blocks =
+                    listOf(
+                        ContentBlock.Text(
+                            segments =
+                                listOf(
+                                    RichText.Plain("Here is some text with a "),
+                                    RichText.InlineLink(
+                                        text = "link",
+                                        url = "https://example.com",
+                                        external = true,
+                                    ),
+                                    RichText.Plain(" in the middle."),
+                                ),
+                        ),
+                    ),
+                type = ContentType("posts", listable = true),
+                metadata = Metadata(),
+            )
+
+        // When
+        val result = presenter.presentContent(content)
+
+        // Then
+        assertTrue(result is MustacheContent)
+        val data = result.model as ContentDto
+        assertEquals(1, data.blocks.size)
+
+        val blockWrapper = data.blocks[0]
+        assertTrue(blockWrapper.containsKey("Text"))
+        val block = blockWrapper["Text"] as ContentBlock.Text
+
+        assertEquals(3, block.segments.size)
+        assertEquals("Here is some text with a ", (block.segments[0] as RichText.Plain).text)
+
+        val link = block.segments[1] as RichText.InlineLink
+        assertEquals("link", link.text)
+        assertEquals("https://example.com", link.url)
+        assertTrue(link.external)
+
+        assertEquals(" in the middle.", (block.segments[2] as RichText.Plain).text)
+    }
 }

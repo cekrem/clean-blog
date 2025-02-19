@@ -7,12 +7,12 @@ import io.github.cekrem.domain.model.ContentSummary
 import io.ktor.server.mustache.MustacheContent
 
 class MustacheContentPresenter : ContentPresenter {
-    override fun presentContent(content: Content): MustacheContent =
+    override fun presentContent(content: Content) =
         MustacheContent(
             "content.mustache",
             content
                 .dto(),
         )
 
-    override fun presentContentList(contents: List<ContentSummary>): MustacheContent = MustacheContent("list.mustache", contents.dto())
+    override fun presentContentList(contents: List<ContentSummary>) = MustacheContent("list.mustache", contents.dto())
 }
