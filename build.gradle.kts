@@ -31,6 +31,7 @@ dependencies {
     implementation(libs.intellij.markdown)
     testImplementation(kotlin("test"))
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.jsoup)
     testImplementation(libs.mockk)
     testImplementation(libs.ktor.client.core)
     testImplementation(libs.ktor.client.cio)

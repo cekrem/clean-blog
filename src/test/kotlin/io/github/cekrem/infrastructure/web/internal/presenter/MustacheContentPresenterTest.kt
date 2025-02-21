@@ -52,7 +52,6 @@ class MustacheContentPresenterTest {
         val result = presenter.presentContent(content)
 
         // Then
-        assertTrue(result is MustacheContent)
         assertEquals("content.mustache", result.template)
 
         val data = result.model as ContentDto

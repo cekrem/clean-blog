@@ -9,40 +9,42 @@
     <meta content="width=device-width, initial-scale=1" name="viewport" />
 </head>
 <body>
-    <h1>{{title}}</h1>
+    <article>
+        <h1>{{title}}</h1>
 
-    {{#blocks}}
-        {{#isHeading}}
-        <h{{level}}>{{text}}</h{{level}}>
-        {{/isHeading}}
+        {{#blocks}}
+            {{#isHeading}}
+            <h{{level}}>{{text}}</h{{level}}>
+            {{/isHeading}}
 
-        {{#isText}}
-        <p>
-            {{#segments}}
-                {{#isPlain}}{{text}}{{/isPlain}}
-                {{#isInlineLink}}<a href="{{url}}">{{text}}</a>{{/isInlineLink}}
-            {{/segments}}
-        </p>
-        {{/isText}}
+            {{#isText}}
+            <p>
+                {{#segments}}
+                    {{#isPlain}}{{text}}{{/isPlain}}
+                    {{#isInlineLink}}<a href="{{url}}">{{text}}</a>{{/isInlineLink}}
+                {{/segments}}
+            </p>
+            {{/isText}}
 
-        {{#isList}}
-        <ul>
-            {{#items}}
-            <li>{{.}}</li>
-            {{/items}}
-        </ul>
-        {{/isList}}
+            {{#isList}}
+            <ul>
+                {{#items}}
+                <li>{{.}}</li>
+                {{/items}}
+            </ul>
+            {{/isList}}
 
-        {{#isCode}}
-        <pre><code{{#language}} class="language-{{.}}"{{/language}}>{{content}}</code></pre>
-        {{/isCode}}
+            {{#isCode}}
+            <pre><code{{#language}} class="language-{{.}}"{{/language}}>{{content}}</code></pre>
+            {{/isCode}}
 
-        {{#isTextWithLink}}
-        <p>
-            {{text}}
-            <a href="{{url}}">{{linkText}}</a>.
-        </p>
-        {{/isTextWithLink}}
-    {{/blocks}}
+            {{#isTextWithLink}}
+            <p>
+                {{text}}
+                <a href="{{url}}">{{linkText}}</a>.
+            </p>
+            {{/isTextWithLink}}
+        {{/blocks}}
+    </article>
 </body>
 </html>

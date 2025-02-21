@@ -1,10 +1,8 @@
 package io.github.cekrem.adapter.dto
 
 import io.github.cekrem.domain.model.Content
-import io.github.cekrem.domain.model.ContentBlock
 import io.github.cekrem.domain.model.ContentSummary
 
-typealias ContentBlockWrapperDto = Map<String, ContentBlock>
 typealias ContentSummaryDto = Map<String, String>
 
 data class ContentDto(

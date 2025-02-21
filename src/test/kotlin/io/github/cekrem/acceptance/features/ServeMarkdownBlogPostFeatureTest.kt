@@ -1,6 +1,6 @@
 package io.github.cekrem.acceptance.features
 
-import TestFixtures
+import io.github.cekrem.acceptance.TestFixtures
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
@@ -8,6 +8,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.withCharset
 import kotlinx.coroutines.test.runTest
+import org.jsoup.Jsoup
+import org.jsoup.nodes.Document
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 
@@ -15,15 +17,15 @@ class ServeMarkdownBlogPostFeatureTest : FeatureAcceptanceTest() {
     @Test
     fun `should convert and serve markdown blog posts as properly formatted HTML pages`() =
         runTest {
-            TestFixtures.blogPosts.forEach { post ->
+            TestFixtures.blogPosts.forEach { (slug, post) ->
                 // Given a blog post exists
                 testApplication.givenBlogPost(
-                    slug = post,
-                    content = TestFixtures.readMarkdownPost(post),
+                    slug = slug,
+                    content = post.markdownInput,
                 )
 
                 // When requesting the blog post
-                val response = testClient.get("${testApplication.baseUrl}/posts/$post")
+                val response = testClient.get("${testApplication.baseUrl}/posts/$slug")
 
                 // Then it should return properly formatted HTML
                 assertEquals(HttpStatusCode.OK, response.status)
@@ -31,7 +33,7 @@ class ServeMarkdownBlogPostFeatureTest : FeatureAcceptanceTest() {
                     ContentType.Text.Html.withCharset(Charsets.UTF_8),
                     response.contentType(),
                 )
-                assertEquals(TestFixtures.readHtmlFixture(post), response.bodyAsText())
+                assertEquals(post.expectedHtmlOutput.standardizeHtml(), response.bodyAsText().standardizeHtml())
             }
         }
 
@@ -51,7 +53,7 @@ class ServeMarkdownBlogPostFeatureTest : FeatureAcceptanceTest() {
             // Given a blog post with malformed markdown
             testApplication.givenBlogPost(
                 slug = "malformed",
-                content = "Invalid --- frontmatter",
+                content = "Invalid --- front matter",
             )
 
             // When requesting the blog post
@@ -60,4 +62,15 @@ class ServeMarkdownBlogPostFeatureTest : FeatureAcceptanceTest() {
             // Then it should return 500
             assertEquals(HttpStatusCode.InternalServerError, response.status)
         }
+
+    private fun String.standardizeHtml(): String {
+        val doc: Document = Jsoup.parse(this)
+        doc.outputSettings(
+            Document
+                .OutputSettings()
+                .prettyPrint(true),
+        )
+
+        return doc.outerHtml()
+    }
 }
