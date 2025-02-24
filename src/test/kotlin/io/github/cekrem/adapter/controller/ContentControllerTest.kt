@@ -1,5 +1,6 @@
 package io.github.cekrem.adapter.controller
 
+import io.github.cekrem.adapter.dto.dto
 import io.github.cekrem.adapter.presenter.ContentPresenter
 import io.github.cekrem.application.usecase.GetContentUseCase
 import io.github.cekrem.application.usecase.GetListableContentTypes
@@ -79,7 +80,7 @@ class ContentControllerTest {
             val presentedContent = mockk<Any>()
 
             coEvery { getContent("posts/test") } returns content
-            every { contentPresenter.presentContent(content) } returns presentedContent
+            every { contentPresenter.presentContent(content.dto()) } returns presentedContent
 
             // When
             val response = controller.getContentResponse(type = "posts", slug = "test")
@@ -89,7 +90,7 @@ class ContentControllerTest {
             assertEquals(presentedContent, response.body)
             coVerify(exactly = 1) {
                 getContent("posts/test")
-                contentPresenter.presentContent(content)
+                contentPresenter.presentContent(content.dto())
             }
         }
 
@@ -114,7 +115,7 @@ class ContentControllerTest {
             val presentedList = mockk<Any>()
 
             coEvery { listContents(type) } returns summaries
-            every { contentPresenter.presentContentList(summaries) } returns presentedList
+            every { contentPresenter.presentContentList(summaries.dto()) } returns presentedList
 
             // When
             val response = controller.getListContentsResponse(type)
@@ -124,7 +125,7 @@ class ContentControllerTest {
             assertEquals(presentedList, response.body)
             coVerify(exactly = 1) {
                 listContents(type)
-                contentPresenter.presentContentList(summaries)
+                contentPresenter.presentContentList(summaries.dto())
             }
         }
 
@@ -173,7 +174,7 @@ class ContentControllerTest {
             val presentedContent = mockk<Any>()
 
             coEvery { getContent("pages/index") } returns indexContent
-            every { contentPresenter.presentContent(indexContent) } returns presentedContent
+            every { contentPresenter.presentContent(indexContent.dto()) } returns presentedContent
 
             // When
             val response = controller.getIndexResponse()
@@ -183,7 +184,7 @@ class ContentControllerTest {
             assertEquals(presentedContent, response.body)
             coVerify(exactly = 1) {
                 getContent("pages/index")
-                contentPresenter.presentContent(indexContent)
+                contentPresenter.presentContent(indexContent.dto())
             }
         }
 }

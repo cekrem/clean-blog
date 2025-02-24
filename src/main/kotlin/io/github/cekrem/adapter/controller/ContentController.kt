@@ -1,5 +1,6 @@
 package io.github.cekrem.adapter.controller
 
+import io.github.cekrem.adapter.dto.dto
 import io.github.cekrem.adapter.presenter.ContentPresenter
 import io.github.cekrem.application.usecase.GetContentUseCase
 import io.github.cekrem.application.usecase.GetListableContentTypes
@@ -29,7 +30,7 @@ class ContentController(
         val content =
             getContent(path) ?: return Response(statusCode = 404)
 
-        return Response(statusCode = 200, body = contentPresenter.presentContent(content))
+        return Response(statusCode = 200, body = contentPresenter.presentContent(content.dto()))
     }
 
     // TODO: support custom index page somehow?
@@ -37,7 +38,7 @@ class ContentController(
 
     suspend fun getListContentsResponse(type: ContentType): Response<Any> {
         val list = listContents(type)
-        return Response(200, contentPresenter.presentContentList(list))
+        return Response(200, contentPresenter.presentContentList(list.dto()))
     }
 
     data class Response<T>(

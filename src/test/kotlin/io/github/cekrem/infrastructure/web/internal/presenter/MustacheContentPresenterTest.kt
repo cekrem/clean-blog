@@ -4,6 +4,7 @@ import io.github.cekrem.adapter.dto.ContentBlockDto
 import io.github.cekrem.adapter.dto.ContentDto
 import io.github.cekrem.adapter.dto.ContentSummaryDto
 import io.github.cekrem.adapter.dto.RichTextDto
+import io.github.cekrem.adapter.dto.dto
 import io.github.cekrem.domain.model.Content
 import io.github.cekrem.domain.model.ContentBlock
 import io.github.cekrem.domain.model.ContentSummary
@@ -51,7 +52,7 @@ class MustacheContentPresenterTest {
             )
 
         // When
-        val result = presenter.presentContent(content)
+        val result = presenter.presentContent(content.dto())
 
         // Then
         assertEquals("content.mustache", result.template)
@@ -98,7 +99,7 @@ class MustacheContentPresenterTest {
             )
 
         // When
-        val result = presenter.presentContentList(summaries)
+        val result = presenter.presentContentList(summaries.dto())
 
         // Then
         assertTrue(result is MustacheContent)
@@ -131,7 +132,7 @@ class MustacheContentPresenterTest {
             )
 
         // When
-        val result = presenter.presentContent(content)
+        val result = presenter.presentContent(content.dto())
 
         // Then
         assertTrue(result is MustacheContent)
@@ -197,7 +198,7 @@ class MustacheContentPresenterTest {
             )
 
         // When
-        val result = presenter.presentContent(content)
+        val result = presenter.presentContent(content.dto())
 
         // Then
         assertTrue(result is MustacheContent)
@@ -243,7 +244,7 @@ class MustacheContentPresenterTest {
             )
 
         // When
-        val result = presenter.presentContent(content)
+        val result = presenter.presentContent(content.dto())
 
         // Then
         assertTrue(result is MustacheContent)
