@@ -146,7 +146,7 @@ class MarkdownContentParserTest {
                 ---
                 This is a paragraph of text.
                 
-                This is another paragraph with *italic* and **bold** text.
+                This is another `paragraph` with *italic* and **bold** text.
                 """.trimIndent()
 
             // When
@@ -163,7 +163,17 @@ class MarkdownContentParserTest {
                 result.blocks[0],
             )
             assertEquals(
-                ContentBlock.Text(listOf(RichText.Plain("This is another paragraph with *italic* and **bold** text."))),
+                ContentBlock.Text(
+                    listOf(
+                        RichText.Plain("This is another "),
+                        RichText.InlineCode("paragraph"),
+                        RichText.Plain(" with "),
+                        RichText.Italic("italic"),
+                        RichText.Plain(" and "),
+                        RichText.Bold("bold"),
+                        RichText.Plain(" text."),
+                    ),
+                ),
                 result.blocks[1],
             )
         }

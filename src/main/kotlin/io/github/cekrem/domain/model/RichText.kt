@@ -7,9 +7,21 @@ sealed interface RichText {
         override val text: String,
     ) : RichText
 
+    data class Bold(
+        override val text: String,
+    ) : RichText
+
+    data class Italic(
+        override val text: String,
+    ) : RichText
+
+    data class InlineCode(
+        override val text: String,
+    ) : RichText
+
     data class InlineLink(
         override val text: String,
         val url: String,
-        val external: Boolean = false,
+        val external: Boolean,
     ) : RichText
 }

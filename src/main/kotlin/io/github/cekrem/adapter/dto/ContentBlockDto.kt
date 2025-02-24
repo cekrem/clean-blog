@@ -102,6 +102,27 @@ sealed class RichTextDto(
             properties = mapOf("text" to text),
         )
 
+    data class Bold(
+        val text: String,
+    ) : RichTextDto(
+            textTypes = mapOf("bold" to true),
+            properties = mapOf("text" to text),
+        )
+
+    data class Italic(
+        val text: String,
+    ) : RichTextDto(
+            textTypes = mapOf("italic" to true),
+            properties = mapOf("text" to text),
+        )
+
+    data class InlineCode(
+        val text: String,
+    ) : RichTextDto(
+            textTypes = mapOf("inlineCode" to true),
+            properties = mapOf("text" to text),
+        )
+
     data class InlineLink(
         val text: String,
         val url: String,
@@ -129,5 +150,8 @@ fun ContentBlock.toDto(): ContentBlockDto =
 private fun RichText.toDto(): RichTextDto =
     when (this) {
         is RichText.Plain -> RichTextDto.Plain(text)
+        is RichText.Bold -> RichTextDto.Bold(text)
+        is RichText.Italic -> RichTextDto.Italic(text)
+        is RichText.InlineCode -> RichTextDto.InlineCode(text)
         is RichText.InlineLink -> RichTextDto.InlineLink(text, url)
     }

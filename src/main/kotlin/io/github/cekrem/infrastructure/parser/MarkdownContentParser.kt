@@ -130,6 +130,7 @@ private class MarkdownBlockParser {
             MarkdownElementTypes.ORDERED_LIST,
             MarkdownElementTypes.UNORDERED_LIST,
             -> parseList(node, markdownContent)
+
             else -> null
         }
 
@@ -186,6 +187,56 @@ private class MarkdownBlockParser {
                             external = link.external,
                         ),
                     )
+                    plainText = ""
+                }
+
+                MarkdownElementTypes.EMPH -> {
+                    // Add accumulated text if any
+                    if (plainText.isNotEmpty()) {
+                        segments.add(RichText.Plain(plainText))
+                        plainText = ""
+                    }
+                    segments.add(
+                        RichText.Italic(
+                            text =
+                                markdownContent
+                                    .substring(child.startOffset, child.endOffset)
+                                    .removeSurrounding("_")
+                                    .removeSurrounding("*"),
+                        ),
+                    )
+                    plainText = ""
+                }
+
+                MarkdownElementTypes.STRONG -> {
+                    // Add accumulated text if any
+                    if (plainText.isNotEmpty()) {
+                        segments.add(RichText.Plain(plainText))
+                        plainText = ""
+                    }
+                    segments.add(
+                        RichText.Bold(
+                            text =
+                                markdownContent
+                                    .substring(child.startOffset, child.endOffset)
+                                    .removeSurrounding("**"),
+                        ),
+                    )
+                    plainText = ""
+                }
+
+                MarkdownElementTypes.CODE_SPAN -> {
+                    // Add accumulated text if any
+                    if (plainText.isNotEmpty()) {
+                        segments.add(RichText.Plain(plainText))
+                        plainText = ""
+                    }
+                    segments.add(
+                        RichText.InlineCode(
+                            text = markdownContent.substring(child.startOffset, child.endOffset).trim('`'),
+                        ),
+                    )
+                    plainText = ""
                 }
 
                 else -> {

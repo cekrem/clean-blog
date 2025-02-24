@@ -1,7 +1,5 @@
 package io.github.cekrem.domain.model
 
-import java.awt.SystemColor.text
-
 sealed interface ContentBlock {
     data class Heading(
         val text: String,
