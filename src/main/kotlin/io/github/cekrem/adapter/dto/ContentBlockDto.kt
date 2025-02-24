@@ -17,6 +17,7 @@ data class ContentBlockDto(
     val language: String? = null,
     val url: String? = null,
     val linkText: String? = null,
+    val ordered: Boolean? = null,
 )
 
 data class RichTextDto(
@@ -62,6 +63,12 @@ fun ContentBlock.toDto() =
                 url = url,
                 text = alt,
                 linkText = caption,
+            )
+        is ContentBlock.TextList ->
+            ContentBlockDto(
+                isList = true,
+                items = this.items,
+                ordered = this.ordered,
             )
     }
 

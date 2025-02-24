@@ -65,6 +65,18 @@ sealed interface ContentBlock {
         }
     }
 
+    data class TextList(
+        val items: List<String>,
+        val ordered: Boolean = false,
+    ) : ContentBlock {
+        init {
+            require(items.isNotEmpty()) { "List must contain at least one item" }
+            items.forEach { item ->
+                require(item.isNotBlank()) { "List items cannot be blank" }
+            }
+        }
+    }
+
     companion object {
         private fun isValidUrl(url: String): Boolean =
             url.length < 500 &&

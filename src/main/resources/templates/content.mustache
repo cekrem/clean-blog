@@ -27,11 +27,21 @@
             {{/isText}}
 
             {{#isList}}
-            <ul>
-                {{#items}}
-                <li>{{.}}</li>
-                {{/items}}
-            </ul>
+                {{#ordered}}
+                <ol>
+                {{/ordered}}
+                {{^ordered}}
+                <ul>
+                {{/ordered}}
+                    {{#items}}
+                    <li>{{.}}</li>
+                    {{/items}}
+                {{#ordered}}
+                </ol>
+                {{/ordered}}
+                {{^ordered}}
+                </ul>
+                {{/ordered}}
             {{/isList}}
 
             {{#isCode}}

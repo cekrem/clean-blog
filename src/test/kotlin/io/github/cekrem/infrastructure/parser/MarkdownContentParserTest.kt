@@ -10,6 +10,8 @@ import kotlinx.datetime.LocalDateTime
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class MarkdownContentParserTest {
     private lateinit var contentParser: ContentParser
@@ -389,4 +391,48 @@ class MarkdownContentParserTest {
             )
         }
     }
+
+    @Test
+    fun `should parse unordered lists correctly`() =
+        runTest {
+            val rawContent =
+                """
+                ---
+                title: Test Post
+                ---
+                - Item 1
+                - Item 2
+                - Item 3
+                """.trimIndent()
+
+            val result = contentParser.parse(rawContent, "posts/test", ContentType("posts", true))
+
+            assertEquals(1, result.blocks.size)
+            with(result.blocks[0] as ContentBlock.TextList) {
+                assertEquals(listOf("Item 1", "Item 2", "Item 3"), items)
+                assertFalse(ordered)
+            }
+        }
+
+    @Test
+    fun `should parse ordered lists correctly`() =
+        runTest {
+            val rawContent =
+                """
+                ---
+                title: Test Post
+                ---
+                1. First
+                2. Second
+                3. Third
+                """.trimIndent()
+
+            val result = contentParser.parse(rawContent, "posts/test", ContentType("posts", true))
+
+            assertEquals(1, result.blocks.size)
+            with(result.blocks[0] as ContentBlock.TextList) {
+                assertEquals(listOf("First", "Second", "Third"), items)
+                assertTrue(ordered)
+            }
+        }
 }
