@@ -1,5 +1,7 @@
 package io.github.cekrem.domain.model
 
+import java.awt.SystemColor.text
+
 sealed interface ContentBlock {
     data class Heading(
         val text: String,
@@ -45,12 +47,16 @@ sealed interface ContentBlock {
     data class Link(
         val text: String,
         val url: String,
-        val external: Boolean = false,
+        val external: Boolean = externalRegex.containsMatchIn(url),
     ) : ContentBlock {
         init {
             require(text.isNotBlank()) { "Link text cannot be empty or blank" }
             require(url.isNotBlank()) { "URL cannot be empty or blank" }
             require(isValidUrl(url)) { "Invalid URL format" }
+        }
+
+        private companion object {
+            val externalRegex = Regex("^(?:\\w[\\w+.-]*:)?//")
         }
     }
 
