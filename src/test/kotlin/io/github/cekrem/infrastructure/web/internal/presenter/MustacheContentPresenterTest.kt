@@ -1,7 +1,9 @@
 package io.github.cekrem.infrastructure.web.internal.presenter
 
+import io.github.cekrem.adapter.dto.ContentBlockDto
 import io.github.cekrem.adapter.dto.ContentDto
 import io.github.cekrem.adapter.dto.ContentSummaryDto
+import io.github.cekrem.adapter.dto.RichTextDto
 import io.github.cekrem.domain.model.Content
 import io.github.cekrem.domain.model.ContentBlock
 import io.github.cekrem.domain.model.ContentSummary
@@ -59,23 +61,20 @@ class MustacheContentPresenterTest {
         assertEquals("Test description", data.description)
         assertEquals(2, data.blocks.size)
 
-        with(data.blocks[0]) {
-            assertTrue(isHeading)
-            assertEquals("Introduction", text)
-            assertEquals(2, level)
+        with(data.blocks[0] as ContentBlockDto.Heading) {
+            assertTrue(blockTypes["heading"] == true)
+            assertEquals("Introduction", properties["text"])
+            assertEquals(2, properties["level"])
         }
 
-        with(data.blocks[1]) {
-            assertTrue(isText)
-            assertEquals(2, segments?.size)
-            segments?.get(0)?.let {
-                assertTrue(it.isPlain)
-                assertEquals("Hello ", it.text)
-            }
-            segments?.get(1)?.let {
-                assertTrue(it.isInlineLink)
-                assertEquals("world", it.text)
-                assertEquals("https://example.com", it.url)
+        with(data.blocks[1] as ContentBlockDto.Text) {
+            assertTrue(blockTypes["text"] == true)
+            val segments = properties["segments"] as List<*>
+            assertEquals(2, segments.size)
+
+            with(segments[0] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals("Hello ", properties["text"])
             }
         }
     }
@@ -139,10 +138,42 @@ class MustacheContentPresenterTest {
         val data = result.model as ContentDto
         assertEquals(6, data.blocks.size)
 
-        with(data.blocks[0]) { assertTrue(isHeading) }
-        with(data.blocks[1]) { assertTrue(isText) }
-        with(data.blocks[2]) { assertTrue(isCode) }
-        with(data.blocks[4]) { assertTrue(isTextWithLink) }
+        with(data.blocks[0] as ContentBlockDto.Heading) {
+            assertTrue(blockTypes["heading"] == true)
+            assertEquals("Title", properties["text"])
+            assertEquals(1, properties["level"])
+        }
+        with(data.blocks[1] as ContentBlockDto.Text) {
+            assertTrue(blockTypes["text"] == true)
+            val segments = properties["segments"] as List<*>
+            assertEquals(1, segments.size)
+
+            with(segments[0] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals("Plain text", properties["text"])
+            }
+        }
+        with(data.blocks[2] as ContentBlockDto.Code) {
+            assertTrue(blockTypes["code"] == true)
+            assertEquals("println(\"Hello\")", properties["content"])
+            assertEquals("kotlin", properties["language"])
+        }
+        with(data.blocks[3] as ContentBlockDto.Quote) {
+            assertTrue(blockTypes["quote"] == true)
+            assertEquals("Famous quote", properties["content"])
+            assertEquals("Author", properties["attribution"])
+        }
+        with(data.blocks[4] as ContentBlockDto.Link) {
+            assertTrue(blockTypes["link"] == true)
+            assertEquals("Click me", properties["text"])
+            assertEquals("https://example.com", properties["url"])
+            assertEquals(true, properties["external"])
+        }
+        with(data.blocks[5] as ContentBlockDto.Image) {
+            assertTrue(blockTypes["image"] == true)
+            assertEquals("https://example.com/image.jpg", properties["url"])
+            assertEquals("Test image", properties["alt"])
+        }
     }
 
     @Test
@@ -173,12 +204,14 @@ class MustacheContentPresenterTest {
         val data = result.model as ContentDto
         assertEquals(1, data.blocks.size)
 
-        with(data.blocks[0]) {
-            assertTrue(isText)
-            assertEquals(1, segments?.size)
-            segments?.get(0)?.let {
-                assertTrue(it.isPlain)
-                assertEquals("This is a simple paragraph of text.", it.text)
+        with(data.blocks[0] as ContentBlockDto.Text) {
+            assertTrue(blockTypes["text"] == true)
+            val segments = properties["segments"] as List<*>
+            assertEquals(1, segments.size)
+
+            with(segments[0] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals("This is a simple paragraph of text.", properties["text"])
             }
         }
     }
@@ -217,24 +250,25 @@ class MustacheContentPresenterTest {
         val data = result.model as ContentDto
         assertEquals(1, data.blocks.size)
 
-        with(data.blocks[0]) {
-            assertTrue(isText)
-            assertEquals(3, segments?.size)
+        with(data.blocks[0] as ContentBlockDto.Text) {
+            assertTrue(blockTypes["text"] == true)
+            val segments = properties["segments"] as List<*>
+            assertEquals(3, segments.size)
 
-            segments?.get(0)?.let {
-                assertTrue(it.isPlain)
-                assertEquals("Here is some text with a ", it.text)
+            with(segments[0] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals("Here is some text with a ", properties["text"])
             }
 
-            segments?.get(1)?.let {
-                assertTrue(it.isInlineLink)
-                assertEquals("link", it.text)
-                assertEquals("https://example.com", it.url)
+            with(segments[1] as RichTextDto.InlineLink) {
+                assertTrue(textTypes["inlineLink"] == true)
+                assertEquals("link", properties["text"])
+                assertEquals("https://example.com", properties["url"])
             }
 
-            segments?.get(2)?.let {
-                assertTrue(it.isPlain)
-                assertEquals(" in the middle.", it.text)
+            with(segments[2] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals(" in the middle.", properties["text"])
             }
         }
     }

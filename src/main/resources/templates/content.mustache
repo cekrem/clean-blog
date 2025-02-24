@@ -13,47 +13,52 @@
         <h1>{{title}}</h1>
 
         {{#blocks}}
-            {{#isHeading}}
-            <h{{level}}>{{text}}</h{{level}}>
-            {{/isHeading}}
+            {{#blockTypes.heading}}
+            <h{{properties.level}}>{{properties.text}}</h{{properties.level}}>
+            {{/blockTypes.heading}}
 
-            {{#isText}}
+            {{#blockTypes.text}}
             <p>
-                {{#segments}}
-                    {{#isPlain}}{{text}}{{/isPlain}}
-                    {{#isInlineLink}}<a href="{{url}}">{{text}}</a>{{/isInlineLink}}
-                {{/segments}}
+                {{#properties.segments}}
+                    {{#textTypes.plain}}{{properties.text}}{{/textTypes.plain}}
+                    {{#textTypes.inlineLink}}<a href="{{properties.url}}">{{properties.text}}</a>{{/textTypes.inlineLink}}
+                {{/properties.segments}}
             </p>
-            {{/isText}}
+            {{/blockTypes.text}}
 
-            {{#isList}}
-                {{#ordered}}
-                <ol>
-                {{/ordered}}
-                {{^ordered}}
-                <ul>
-                {{/ordered}}
-                    {{#items}}
-                    <li>{{.}}</li>
-                    {{/items}}
-                {{#ordered}}
-                </ol>
-                {{/ordered}}
-                {{^ordered}}
-                </ul>
-                {{/ordered}}
-            {{/isList}}
+            {{#blockTypes.textList}}
+            {{#properties.ordered}}<ol>{{/properties.ordered}}
+            {{^properties.ordered}}<ul>{{/properties.ordered}}
+                {{#properties.items}}<li>{{.}}</li>{{/properties.items}}
+            {{#properties.ordered}}</ol>{{/properties.ordered}}
+            {{^properties.ordered}}</ul>{{/properties.ordered}}
+            {{/blockTypes.textList}}
 
-            {{#isCode}}
-            <pre><code{{#language}} class="language-{{.}}"{{/language}}>{{content}}</code></pre>
-            {{/isCode}}
+            {{#blockTypes.code}}
+            <pre><code{{#properties.language}} class="language-{{.}}"{{/properties.language}}>{{properties.content}}</code></pre>
+            {{/blockTypes.code}}
 
-            {{#isTextWithLink}}
+            {{#blockTypes.quote}}
+            <blockquote>
+                <p>{{properties.content}}</p>
+                {{#properties.attribution}}<cite>— {{.}}</cite>{{/properties.attribution}}
+            </blockquote>
+            {{/blockTypes.quote}}
+
+            {{#blockTypes.link}}
             <p>
-                {{text}}
-                <a href="{{url}}">{{linkText}}</a>.
+                <a href="{{properties.url}}"{{#properties.external}} target="_blank" rel="noopener"{{/properties.external}}>
+                    {{properties.text}}
+                </a>
             </p>
-            {{/isTextWithLink}}
+            {{/blockTypes.link}}
+
+            {{#blockTypes.image}}
+            <figure>
+                <img src="{{properties.url}}" alt="{{properties.alt}}" />
+                {{#properties.caption}}<figcaption>{{.}}</figcaption>{{/properties.caption}}
+            </figure>
+            {{/blockTypes.image}}
         {{/blocks}}
     </article>
 </body>

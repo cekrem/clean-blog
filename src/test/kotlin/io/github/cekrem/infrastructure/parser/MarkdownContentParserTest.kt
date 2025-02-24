@@ -1,5 +1,8 @@
 package io.github.cekrem.infrastructure.parser
 
+import io.github.cekrem.adapter.dto.ContentBlockDto
+import io.github.cekrem.adapter.dto.RichTextDto
+import io.github.cekrem.adapter.dto.toDto
 import io.github.cekrem.application.parser.ContentParser
 import io.github.cekrem.domain.model.ContentBlock
 import io.github.cekrem.domain.model.ContentType
@@ -375,20 +378,33 @@ class MarkdownContentParserTest {
 
             // Then
             assertEquals(
-                ContentBlock.Text(
-                    segments =
-                        listOf(
-                            RichText.Plain("This is a paragraph with an "),
-                            RichText.InlineLink(
-                                text = "inline link",
-                                url = "https://example.com",
-                                external = true,
+                ContentBlock
+                    .Text(
+                        segments =
+                            listOf(
+                                RichText.Plain("This is a paragraph with an "),
+                                RichText.InlineLink(
+                                    text = "inline link",
+                                    url = "https://example.com",
+                                    external = true,
+                                ),
+                                RichText.Plain(" and some more text."),
                             ),
-                            RichText.Plain(" and some more text."),
-                        ),
-                ),
-                result.blocks[0],
+                    ).toDto(),
+                result.blocks[0].toDto(),
             )
+
+            with(result.blocks[0].toDto() as ContentBlockDto.Text) {
+                assertTrue(blockTypes["text"] == true)
+                val segments = properties["segments"] as List<*>
+                assertEquals(3, segments.size)
+
+                with(segments[1] as RichTextDto.InlineLink) {
+                    assertTrue(textTypes["inlineLink"] == true)
+                    assertEquals("inline link", properties["text"])
+                    assertEquals("https://example.com", properties["url"])
+                }
+            }
         }
     }
 

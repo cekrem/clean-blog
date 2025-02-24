@@ -37,17 +37,18 @@ class ContentDtosTest {
         assertEquals(2, result.blocks.size)
 
         with(result.blocks[0]) {
-            assertTrue(isHeading)
-            assertEquals("Hello", text)
-            assertEquals(1, level)
+            assertTrue(blockTypes["heading"] == true)
+            assertEquals("Hello", properties["text"])
+            assertEquals(1, properties["level"])
         }
 
         with(result.blocks[1]) {
-            assertTrue(isText)
-            assertEquals(1, segments?.size)
-            segments?.get(0)?.let {
-                assertTrue(it.isPlain)
-                assertEquals("World", it.text)
+            assertTrue(blockTypes["text"] == true)
+            val segments = properties["segments"] as List<*>
+            assertEquals(1, segments.size)
+            with(segments[0] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals("World", properties["text"])
             }
         }
     }

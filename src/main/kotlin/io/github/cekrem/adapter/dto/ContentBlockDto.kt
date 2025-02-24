@@ -3,86 +3,131 @@ package io.github.cekrem.adapter.dto
 import io.github.cekrem.domain.model.ContentBlock
 import io.github.cekrem.domain.model.RichText
 
-data class ContentBlockDto(
-    val isHeading: Boolean = false,
-    val isText: Boolean = false,
-    val isList: Boolean = false,
-    val isCode: Boolean = false,
-    val isTextWithLink: Boolean = false,
-    val text: String? = null,
-    val level: Int? = null,
-    val segments: List<RichTextDto>? = null,
-    val items: List<String>? = null,
-    val content: String? = null,
-    val language: String? = null,
-    val url: String? = null,
-    val linkText: String? = null,
-    val ordered: Boolean? = null,
-)
+sealed class ContentBlockDto(
+    open val blockTypes: Map<String, Boolean> = emptyMap(),
+    open val properties: Map<String, Any?> = emptyMap(),
+) {
+    data class Heading(
+        val text: String,
+        val level: Int,
+    ) : ContentBlockDto(
+            blockTypes = mapOf("heading" to true),
+            properties =
+                mapOf(
+                    "text" to text,
+                    "level" to level,
+                ),
+        )
 
-data class RichTextDto(
-    val isPlain: Boolean = false,
-    val isInlineLink: Boolean = false,
-    val text: String,
-    val url: String? = null,
-)
+    data class Text(
+        val segments: List<RichTextDto>,
+    ) : ContentBlockDto(
+            blockTypes = mapOf("text" to true),
+            properties = mapOf("segments" to segments),
+        )
 
-fun ContentBlock.toDto() =
+    data class TextList(
+        val items: List<String>,
+        val ordered: Boolean,
+    ) : ContentBlockDto(
+            blockTypes = mapOf("textList" to true),
+            properties =
+                mapOf(
+                    "items" to items,
+                    "ordered" to ordered,
+                ),
+        )
+
+    data class Code(
+        val content: String,
+        val language: String?,
+    ) : ContentBlockDto(
+            blockTypes = mapOf("code" to true),
+            properties =
+                mapOf(
+                    "content" to content,
+                    "language" to language,
+                ),
+        )
+
+    data class Quote(
+        val content: String,
+        val attribution: String?,
+    ) : ContentBlockDto(
+            blockTypes = mapOf("quote" to true),
+            properties =
+                mapOf(
+                    "content" to content,
+                    "attribution" to attribution,
+                ),
+        )
+
+    data class Link(
+        val text: String,
+        val url: String,
+        val external: Boolean,
+    ) : ContentBlockDto(
+            blockTypes = mapOf("link" to true),
+            properties =
+                mapOf(
+                    "text" to text,
+                    "url" to url,
+                    "external" to external,
+                ),
+        )
+
+    data class Image(
+        val url: String,
+        val alt: String?,
+        val caption: String?,
+    ) : ContentBlockDto(
+            blockTypes = mapOf("image" to true),
+            properties =
+                mapOf(
+                    "url" to url,
+                    "alt" to alt,
+                    "caption" to caption,
+                ),
+        )
+}
+
+sealed class RichTextDto(
+    open val textTypes: Map<String, Boolean> = emptyMap(),
+    open val properties: Map<String, Any?> = emptyMap(),
+) {
+    data class Plain(
+        val text: String,
+    ) : RichTextDto(
+            textTypes = mapOf("plain" to true),
+            properties = mapOf("text" to text),
+        )
+
+    data class InlineLink(
+        val text: String,
+        val url: String,
+    ) : RichTextDto(
+            textTypes = mapOf("inlineLink" to true),
+            properties =
+                mapOf(
+                    "text" to text,
+                    "url" to url,
+                ),
+        )
+}
+
+fun ContentBlock.toDto(): ContentBlockDto =
     when (this) {
-        is ContentBlock.Heading ->
-            ContentBlockDto(
-                isHeading = true,
-                text = text,
-                level = level,
-            )
-        is ContentBlock.Text ->
-            ContentBlockDto(
-                isText = true,
-                segments = segments.map { it.toDto() },
-            )
-        is ContentBlock.Code ->
-            ContentBlockDto(
-                isCode = true,
-                content = content,
-                language = language,
-            )
-        is ContentBlock.Quote ->
-            ContentBlockDto(
-                text = content,
-                linkText = attribution,
-            )
-        is ContentBlock.Link ->
-            ContentBlockDto(
-                isTextWithLink = true,
-                text = text,
-                url = url,
-                linkText = text,
-            )
-        is ContentBlock.Image ->
-            ContentBlockDto(
-                url = url,
-                text = alt,
-                linkText = caption,
-            )
-        is ContentBlock.TextList ->
-            ContentBlockDto(
-                isList = true,
-                items = this.items,
-                ordered = this.ordered,
-            )
+        is ContentBlock.Heading -> ContentBlockDto.Heading(text, level)
+        is ContentBlock.Text -> ContentBlockDto.Text(segments.map { it.toDto() })
+        is ContentBlock.Code -> ContentBlockDto.Code(content, language)
+        is ContentBlock.Quote -> ContentBlockDto.Quote(content, attribution)
+        is ContentBlock.Link -> ContentBlockDto.Link(text, url, external)
+        is ContentBlock.Image -> ContentBlockDto.Image(url, alt, caption)
+        is ContentBlock.TextList -> ContentBlockDto.TextList(items, ordered)
     }
 
-private fun RichText.toDto() =
+private fun RichText.toDto(): RichTextDto =
     when (this) {
-        is RichText.Plain ->
-            RichTextDto(
-                isPlain = true,
-                text = text,
-            )
-        is RichText.InlineLink ->
-            RichTextDto(
-                isInlineLink = true,
-                text = text,
-                url = url,
-            )
+        is RichText.Plain -> RichTextDto.Plain(text)
+        is RichText.InlineLink -> RichTextDto.InlineLink(text, url)
     }
