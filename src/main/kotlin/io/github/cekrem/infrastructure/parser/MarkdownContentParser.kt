@@ -104,10 +104,8 @@ private class MarkdownBlockParser {
         tree: ASTNode,
         markdownContent: String,
     ): List<ContentBlock> =
-        buildList {
-            tree.children.forEach { node ->
-                parseNode(node, markdownContent)?.let { add(it) }
-            }
+        tree.children.mapNotNull { node ->
+            parseNode(node, markdownContent)
         }
 
     private fun parseNode(
@@ -127,6 +125,7 @@ private class MarkdownBlockParser {
             MarkdownElementTypes.CODE_FENCE -> parseCodeBlock(node, markdownContent)
             MarkdownElementTypes.BLOCK_QUOTE -> parseQuote(node, markdownContent)
             MarkdownElementTypes.IMAGE -> parseImage(node, markdownContent)
+
             MarkdownElementTypes.ORDERED_LIST,
             MarkdownElementTypes.UNORDERED_LIST,
             -> parseList(node, markdownContent)
@@ -149,9 +148,8 @@ private class MarkdownBlockParser {
                 else -> throw IllegalArgumentException("Invalid heading type")
             }
 
-        val children = node.children.getOrNull(1)?.children ?: emptyList()
-
-        if (children.size < 3) {
+        val children = getRelevantHeaderChildren(node)
+        if (children.size < HEADER_MINIMUM_RICH_TEXT_CHILDREN) {
             return ContentBlock.textHeading(
                 text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
                 level = level,
@@ -163,6 +161,11 @@ private class MarkdownBlockParser {
             level = level,
         )
     }
+
+    private fun getRelevantHeaderChildren(node: ASTNode): List<ASTNode> =
+        node.children
+            ?.getOrNull(1)
+            ?.children ?: emptyList()
 
     private fun parseParagraph(
         node: ASTNode,
@@ -183,96 +186,95 @@ private class MarkdownBlockParser {
     private fun parseRichText(
         children: List<ASTNode> = emptyList(),
         markdownContent: String,
-    ): List<RichText> {
-        // Parse text with potential inline links
-        val segments = mutableListOf<RichText>()
-        var plainText = ""
-
-        children.forEach { child ->
-            when (child.type) {
-                MarkdownElementTypes.INLINE_LINK -> {
-                    // Add accumulated text if any
-                    if (plainText.isNotEmpty()) {
-                        segments.add(RichText.Plain(plainText))
-                        plainText = ""
+    ): List<RichText> =
+        children
+            .fold(Pair(emptyList<RichText>(), "")) { (segments, plainText), child ->
+                when (child.type) {
+                    MarkdownElementTypes.INLINE_LINK -> {
+                        val link = parseLink(child, markdownContent)
+                        val newSegments =
+                            if (plainText.isNotEmpty()) {
+                                segments + RichText.Plain(plainText)
+                            } else {
+                                segments
+                            }
+                        Pair(
+                            newSegments +
+                                RichText.InlineLink(
+                                    text = link.text,
+                                    url = link.url,
+                                    external = link.external,
+                                ),
+                            "",
+                        )
                     }
-
-                    val link = parseLink(child, markdownContent)
-                    segments.add(
-                        RichText.InlineLink(
-                            text = link.text,
-                            url = link.url,
-                            external = link.external,
-                        ),
-                    )
-                    plainText = ""
+                    MarkdownElementTypes.EMPH -> {
+                        val newSegments =
+                            if (plainText.isNotEmpty()) {
+                                segments + RichText.Plain(plainText)
+                            } else {
+                                segments
+                            }
+                        Pair(
+                            newSegments +
+                                RichText.Italic(
+                                    text =
+                                        markdownContent
+                                            .substring(child.startOffset, child.endOffset)
+                                            .removeSurrounding("_")
+                                            .removeSurrounding("*"),
+                                ),
+                            "",
+                        )
+                    }
+                    MarkdownElementTypes.STRONG -> {
+                        val newSegments =
+                            if (plainText.isNotEmpty()) {
+                                segments + RichText.Plain(plainText)
+                            } else {
+                                segments
+                            }
+                        Pair(
+                            newSegments +
+                                RichText.Bold(
+                                    text =
+                                        markdownContent
+                                            .substring(child.startOffset, child.endOffset)
+                                            .removeSurrounding("**"),
+                                ),
+                            "",
+                        )
+                    }
+                    MarkdownElementTypes.CODE_SPAN -> {
+                        val newSegments =
+                            if (plainText.isNotEmpty()) {
+                                segments + RichText.Plain(plainText)
+                            } else {
+                                segments
+                            }
+                        Pair(
+                            newSegments +
+                                RichText.InlineCode(
+                                    text = markdownContent.substring(child.startOffset, child.endOffset).trim('`'),
+                                ),
+                            "",
+                        )
+                    }
+                    else -> {
+                        val text =
+                            markdownContent.substring(child.startOffset, child.endOffset).let {
+                                if (segments.isEmpty() && plainText.isBlank()) it.trimStart() else it
+                            }
+                        Pair(segments, plainText + text)
+                    }
                 }
-
-                MarkdownElementTypes.EMPH -> {
-                    // Add accumulated text if any
-                    if (plainText.isNotEmpty()) {
-                        segments.add(RichText.Plain(plainText))
-                        plainText = ""
-                    }
-                    segments.add(
-                        RichText.Italic(
-                            text =
-                                markdownContent
-                                    .substring(child.startOffset, child.endOffset)
-                                    .removeSurrounding("_")
-                                    .removeSurrounding("*"),
-                        ),
-                    )
-                    plainText = ""
-                }
-
-                MarkdownElementTypes.STRONG -> {
-                    // Add accumulated text if any
-                    if (plainText.isNotEmpty()) {
-                        segments.add(RichText.Plain(plainText))
-                        plainText = ""
-                    }
-                    segments.add(
-                        RichText.Bold(
-                            text =
-                                markdownContent
-                                    .substring(child.startOffset, child.endOffset)
-                                    .removeSurrounding("**"),
-                        ),
-                    )
-                    plainText = ""
-                }
-
-                MarkdownElementTypes.CODE_SPAN -> {
-                    // Add accumulated text if any
-                    if (plainText.isNotEmpty()) {
-                        segments.add(RichText.Plain(plainText))
-                        plainText = ""
-                    }
-                    segments.add(
-                        RichText.InlineCode(
-                            text = markdownContent.substring(child.startOffset, child.endOffset).trim('`'),
-                        ),
-                    )
-                    plainText = ""
-                }
-
-                else -> {
-                    plainText += markdownContent.substring(child.startOffset, child.endOffset)
-                    if (segments.isEmpty()) {
-                        plainText = plainText.trimStart()
-                    }
+            }.let { (segments, remainingText) ->
+                if (remainingText.isNotEmpty()) {
+                    segments + RichText.Plain(remainingText)
+                } else {
+                    segments
                 }
             }
-        }
-
-        // Add any remaining text
-        if (plainText.isNotEmpty()) {
-            segments.add(RichText.Plain(plainText))
-        }
-
-        return segments
-    }
 
     private fun parseCodeBlock(
         node: ASTNode,
@@ -397,6 +399,10 @@ private class MarkdownBlockParser {
             }
 
         return ContentBlock.TextList(items = items, ordered = node.type == MarkdownElementTypes.ORDERED_LIST)
+    }
+
+    companion object {
+        const val HEADER_MINIMUM_RICH_TEXT_CHILDREN = 3
     }
 }
 
