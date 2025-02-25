@@ -21,7 +21,7 @@ class TestApplication private constructor() {
     val baseUrl: String
         get() = "http://localhost:${config.port}"
 
-    private val config = ServerConfig(debug = true)
+    private val config = ServerConfig(debug = true, port = 8081)
 
     init {
         server = createServer()
