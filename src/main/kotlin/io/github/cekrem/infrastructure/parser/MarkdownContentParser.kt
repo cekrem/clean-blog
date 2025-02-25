@@ -148,8 +148,18 @@ private class MarkdownBlockParser {
                 MarkdownElementTypes.ATX_6 -> 6
                 else -> throw IllegalArgumentException("Invalid heading type")
             }
+
+        val children = node.children.getOrNull(1)?.children ?: emptyList()
+
+        if (children.size < 3) {
+            return ContentBlock.textHeading(
+                text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
+                level = level,
+            )
+        }
+
         return ContentBlock.Heading(
-            text = markdownContent.substring(node.startOffset, node.endOffset).trim('#', ' '),
+            segments = parseRichText(children, markdownContent),
             level = level,
         )
     }
@@ -158,7 +168,6 @@ private class MarkdownBlockParser {
         node: ASTNode,
         markdownContent: String,
     ): ContentBlock {
-        // If it's a single link/image, handle as before
         if (node.children.size == 1) {
             when (node.children[0].type) {
                 MarkdownElementTypes.INLINE_LINK -> return parseLink(node.children[0], markdownContent)
@@ -166,11 +175,20 @@ private class MarkdownBlockParser {
             }
         }
 
+        return ContentBlock.Text(
+            segments = parseRichText(node.children, markdownContent),
+        )
+    }
+
+    private fun parseRichText(
+        children: List<ASTNode> = emptyList(),
+        markdownContent: String,
+    ): List<RichText> {
         // Parse text with potential inline links
         val segments = mutableListOf<RichText>()
         var plainText = ""
 
-        node.children.forEach { child ->
+        children.forEach { child ->
             when (child.type) {
                 MarkdownElementTypes.INLINE_LINK -> {
                     // Add accumulated text if any
@@ -241,6 +259,9 @@ private class MarkdownBlockParser {
 
                 else -> {
                     plainText += markdownContent.substring(child.startOffset, child.endOffset)
+                    if (segments.isEmpty()) {
+                        plainText = plainText.trimStart()
+                    }
                 }
             }
         }
@@ -250,7 +271,7 @@ private class MarkdownBlockParser {
             segments.add(RichText.Plain(plainText))
         }
 
-        return ContentBlock.Text(segments = segments)
+        return segments
     }
 
     private fun parseCodeBlock(

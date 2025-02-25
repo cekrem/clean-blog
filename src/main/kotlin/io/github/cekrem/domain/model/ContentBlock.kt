@@ -2,12 +2,13 @@ package io.github.cekrem.domain.model
 
 sealed interface ContentBlock {
     data class Heading(
-        val text: String,
+        val segments: List<RichText>,
         val level: Int = 1,
     ) : ContentBlock {
         init {
             require(level in 1..6) { "Heading level must be between 1 and 6" }
-            require(text.isNotBlank()) { "Heading text cannot be empty or blank" }
+            require(segments.isNotEmpty()) { "Heading text cannot be empty or blank" }
+            require(segments.none { it.text.isBlank() }) { "Heading text cannot be empty or blank" }
         }
     }
 
@@ -90,5 +91,10 @@ sealed interface ContentBlock {
                         url.startsWith("//") ||
                         url.startsWith("/")
                 )
+
+        fun textHeading(
+            text: String,
+            level: Int,
+        ) = Heading(segments = listOf(RichText.Plain(text)), level = level)
     }
 }

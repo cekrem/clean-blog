@@ -8,13 +8,13 @@ sealed class ContentBlockDto(
     open val properties: Map<String, Any?> = emptyMap(),
 ) {
     data class Heading(
-        val text: String,
+        val segments: List<RichTextDto>,
         val level: Int,
     ) : ContentBlockDto(
             blockTypes = mapOf("heading" to true),
             properties =
                 mapOf(
-                    "text" to text,
+                    "segments" to segments,
                     "level" to level,
                 ),
         )
@@ -138,7 +138,7 @@ sealed class RichTextDto(
 
 fun ContentBlock.toDto(): ContentBlockDto =
     when (this) {
-        is ContentBlock.Heading -> ContentBlockDto.Heading(text, level)
+        is ContentBlock.Heading -> ContentBlockDto.Heading(segments.map { it.toDto() }, level)
         is ContentBlock.Text -> ContentBlockDto.Text(segments.map { it.toDto() })
         is ContentBlock.Code -> ContentBlockDto.Code(content, language)
         is ContentBlock.Quote -> ContentBlockDto.Quote(content, attribution)

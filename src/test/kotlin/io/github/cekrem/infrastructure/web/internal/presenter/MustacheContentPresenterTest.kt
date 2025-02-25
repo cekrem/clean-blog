@@ -34,7 +34,7 @@ class MustacheContentPresenterTest {
                 title = "Test Post",
                 blocks =
                     listOf(
-                        ContentBlock.Heading(text = "Introduction", level = 2),
+                        ContentBlock.textHeading(text = "Introduction", level = 2),
                         ContentBlock.Text(
                             segments =
                                 listOf(
@@ -64,7 +64,10 @@ class MustacheContentPresenterTest {
 
         with(data.blocks[0] as ContentBlockDto.Heading) {
             assertTrue(blockTypes["heading"] == true)
-            assertEquals("Introduction", properties["text"])
+            with(segments[0] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals("Introduction", properties["text"])
+            }
             assertEquals(2, properties["level"])
         }
 
@@ -120,7 +123,7 @@ class MustacheContentPresenterTest {
                 title = "Full Test",
                 blocks =
                     listOf(
-                        ContentBlock.Heading(text = "Title", level = 1),
+                        ContentBlock.textHeading(text = "Title", level = 1),
                         ContentBlock.Text(segments = listOf(RichText.Plain("Plain text"))),
                         ContentBlock.Code(content = "println(\"Hello\")", language = "kotlin"),
                         ContentBlock.Quote(content = "Famous quote", attribution = "Author"),
@@ -141,7 +144,10 @@ class MustacheContentPresenterTest {
 
         with(data.blocks[0] as ContentBlockDto.Heading) {
             assertTrue(blockTypes["heading"] == true)
-            assertEquals("Title", properties["text"])
+            with(segments[0] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals("Title", properties["text"])
+            }
             assertEquals(1, properties["level"])
         }
         with(data.blocks[1] as ContentBlockDto.Text) {

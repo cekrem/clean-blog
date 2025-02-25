@@ -14,7 +14,15 @@
 
         {{#blocks}}
             {{#blockTypes.heading}}
-            <h{{properties.level}}>{{properties.text}}</h{{properties.level}}>
+            <h{{properties.level}}>
+                {{#properties.segments}}
+                    {{#textTypes.plain}}{{properties.text}}{{/textTypes.plain}}
+                    {{#textTypes.bold}}<strong>{{properties.text}}</strong>{{/textTypes.bold}}
+                    {{#textTypes.italic}}<i>{{properties.text}}</i>{{/textTypes.italic}}
+                    {{#textTypes.inlineCode}}<code>{{properties.text}}</code>{{/textTypes.inlineCode}}
+                    {{#textTypes.inlineLink}}<a href="{{properties.url}}">{{properties.text}}</a>{{/textTypes.inlineLink}}
+                {{/properties.segments}}
+            </h{{properties.level}}>
             {{/blockTypes.heading}}
 
             {{#blockTypes.text}}

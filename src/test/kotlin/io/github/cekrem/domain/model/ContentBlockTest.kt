@@ -12,7 +12,7 @@ class ContentBlockTest {
         // When/Then
         invalidLevels.forEach { level ->
             assertThrows<IllegalArgumentException> {
-                ContentBlock.Heading(
+                ContentBlock.textHeading(
                     level = level,
                     text = "Test",
                 )
@@ -28,7 +28,7 @@ class ContentBlockTest {
         // When/Then
         invalidTexts.forEach { text ->
             assertThrows<IllegalArgumentException> {
-                ContentBlock.Heading(
+                ContentBlock.textHeading(
                     level = 1,
                     text = text,
                 )
@@ -153,7 +153,7 @@ class ContentBlockTest {
     @Test
     fun `should allow valid content blocks`() {
         // These should not throw exceptions
-        ContentBlock.Heading(level = 1, text = "Valid heading")
+        ContentBlock.textHeading(level = 1, text = "Valid heading")
         ContentBlock.Quote(content = "Valid quote", attribution = "Someone")
         ContentBlock.Link(text = "Valid link", url = "https://example.com/image.jpg")
         ContentBlock.Image(

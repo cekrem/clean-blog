@@ -113,6 +113,7 @@ class MarkdownContentParserTest {
                 #### Level 4 heading
                 ##### Level 5 heading
                 ###### Level 6 heading
+                # This is a `complex` heading with **stuff** going _on_.
                 """.trimIndent()
 
             // When
@@ -124,12 +125,29 @@ class MarkdownContentParserTest {
                 )
 
             // Then
-            assertEquals(result.blocks[0], ContentBlock.Heading(level = 1, text = "Level 1 heading"))
-            assertEquals(result.blocks[1], ContentBlock.Heading(level = 2, text = "Level 2 heading"))
-            assertEquals(result.blocks[2], ContentBlock.Heading(level = 3, text = "Level 3 heading"))
-            assertEquals(result.blocks[3], ContentBlock.Heading(level = 4, text = "Level 4 heading"))
-            assertEquals(result.blocks[4], ContentBlock.Heading(level = 5, text = "Level 5 heading"))
-            assertEquals(result.blocks[5], ContentBlock.Heading(level = 6, text = "Level 6 heading"))
+            assertEquals(ContentBlock.textHeading(level = 1, text = "Level 1 heading"), result.blocks[0])
+            assertEquals(ContentBlock.textHeading(level = 2, text = "Level 2 heading"), result.blocks[1])
+            assertEquals(ContentBlock.textHeading(level = 3, text = "Level 3 heading"), result.blocks[2])
+            assertEquals(ContentBlock.textHeading(level = 4, text = "Level 4 heading"), result.blocks[3])
+            assertEquals(ContentBlock.textHeading(level = 5, text = "Level 5 heading"), result.blocks[4])
+            assertEquals(ContentBlock.textHeading(level = 6, text = "Level 6 heading"), result.blocks[5])
+
+            assertEquals(
+                ContentBlock.Heading(
+                    segments =
+                        listOf(
+                            RichText.Plain(text = "This is a "),
+                            RichText.InlineCode(text = "complex"),
+                            RichText.Plain(text = " heading with "),
+                            RichText.Bold(text = "stuff"),
+                            RichText.Plain(text = " going "),
+                            RichText.Italic(text = "on"),
+                            RichText.Plain(text = "."),
+                        ),
+                    level = 1,
+                ),
+                result.blocks[6],
+            )
         }
     }
 

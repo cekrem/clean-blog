@@ -21,7 +21,7 @@ class ContentDtosTest {
                 title = "Test Post",
                 blocks =
                     listOf(
-                        ContentBlock.Heading(text = "Hello", level = 1),
+                        ContentBlock.Heading(segments = listOf(RichText.Plain("Hello")), level = 1),
                         ContentBlock.Text(segments = listOf(RichText.Plain("World"))),
                     ),
                 type = ContentType("posts", listable = true),
@@ -38,7 +38,11 @@ class ContentDtosTest {
 
         with(result.blocks[0]) {
             assertTrue(blockTypes["heading"] == true)
-            assertEquals("Hello", properties["text"])
+            val segments = properties["segments"] as List<*>
+            with(segments[0] as RichTextDto.Plain) {
+                assertTrue(textTypes["plain"] == true)
+                assertEquals("Hello", properties["text"])
+            }
             assertEquals(1, properties["level"])
         }
 
