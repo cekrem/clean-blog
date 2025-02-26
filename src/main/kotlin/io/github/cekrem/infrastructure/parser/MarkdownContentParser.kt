@@ -38,12 +38,13 @@ internal class MarkdownContentParser : ContentParser {
 
     private fun parseFrontMatter(rawContent: String): FrontMatter {
         val delimiter =
-            delimiters.firstOrNull { rawContent.startsWith(it) }
+            frontmatterDelimiters.firstOrNull { rawContent.startsWith(it) }
                 ?: throw InvalidFrontMatterException("Could not determine front matter start/end: $rawContent")
 
         val rawFrontMatter =
             rawContent.split("$delimiter").getOrNull(1)
                 ?: throw InvalidFrontMatterException("Could not determine front matter start/end: $rawContent")
+
         val entries =
             rawFrontMatter
                 .split("\n")
@@ -92,7 +93,7 @@ internal class MarkdownContentParser : ContentParser {
     }
 
     private companion object {
-        val delimiters = listOf("---\n", "+++\n")
+        val frontmatterDelimiters = listOf("---\n", "+++\n")
         val markdownFlavor = CommonMarkFlavourDescriptor()
         val markdownTreeParser = MarkdownParser(markdownFlavor)
         val blockParser = MarkdownBlockParser()
@@ -137,16 +138,12 @@ private class MarkdownBlockParser {
         node: ASTNode,
         markdownContent: String,
     ): ContentBlock.Heading {
+        require(node.type.name.startsWith("ATX_"))
+
         val level =
-            when (node.type) {
-                MarkdownElementTypes.ATX_1 -> 1
-                MarkdownElementTypes.ATX_2 -> 2
-                MarkdownElementTypes.ATX_3 -> 3
-                MarkdownElementTypes.ATX_4 -> 4
-                MarkdownElementTypes.ATX_5 -> 5
-                MarkdownElementTypes.ATX_6 -> 6
-                else -> throw IllegalArgumentException("Invalid heading type")
-            }
+            node.type.name
+                .last()
+                .digitToInt()
 
         val children = getRelevantHeaderChildren(node)
         if (children.size < HEADER_MINIMUM_RICH_TEXT_CHILDREN) {
@@ -187,94 +184,60 @@ private class MarkdownBlockParser {
         children: List<ASTNode> = emptyList(),
         markdownContent: String,
     ): List<RichText> =
-        children
-            .fold(Pair(emptyList<RichText>(), "")) { (segments, plainText), child ->
-                when (child.type) {
-                    MarkdownElementTypes.INLINE_LINK -> {
-                        val link = parseLink(child, markdownContent)
-                        val newSegments =
-                            if (plainText.isNotEmpty()) {
-                                segments + RichText.Plain(plainText)
-                            } else {
-                                segments
-                            }
-                        Pair(
-                            newSegments +
-                                RichText.InlineLink(
-                                    text = link.text,
-                                    url = link.url,
-                                    external = link.external,
-                                ),
-                            "",
-                        )
-                    }
-                    MarkdownElementTypes.EMPH -> {
-                        val newSegments =
-                            if (plainText.isNotEmpty()) {
-                                segments + RichText.Plain(plainText)
-                            } else {
-                                segments
-                            }
-                        Pair(
-                            newSegments +
-                                RichText.Italic(
-                                    text =
-                                        markdownContent
-                                            .substring(child.startOffset, child.endOffset)
-                                            .removeSurrounding("_")
-                                            .removeSurrounding("*"),
-                                ),
-                            "",
-                        )
-                    }
-                    MarkdownElementTypes.STRONG -> {
-                        val newSegments =
-                            if (plainText.isNotEmpty()) {
-                                segments + RichText.Plain(plainText)
-                            } else {
-                                segments
-                            }
-                        Pair(
-                            newSegments +
-                                RichText.Bold(
-                                    text =
-                                        markdownContent
-                                            .substring(child.startOffset, child.endOffset)
-                                            .removeSurrounding("**"),
-                                ),
-                            "",
-                        )
-                    }
-                    MarkdownElementTypes.CODE_SPAN -> {
-                        val newSegments =
-                            if (plainText.isNotEmpty()) {
-                                segments + RichText.Plain(plainText)
-                            } else {
-                                segments
-                            }
-                        Pair(
-                            newSegments +
-                                RichText.InlineCode(
-                                    text = markdownContent.substring(child.startOffset, child.endOffset).trim('`'),
-                                ),
-                            "",
-                        )
-                    }
-                    else -> {
-                        val text =
-                            markdownContent.substring(child.startOffset, child.endOffset).let {
-                                if (segments.isEmpty() && plainText.isBlank()) it.trimStart() else it
-                            }
-                        Pair(segments, plainText + text)
-                    }
+        children.fold(emptyList<RichText>()) { segments, child ->
+            when (child.type) {
+                MarkdownElementTypes.INLINE_LINK -> {
+                    segments +
+                        parseLink(child, markdownContent).let {
+                            RichText.InlineLink(
+                                text = it.text,
+                                url = it.url,
+                                external = it.external,
+                            )
+                        }
                 }
-            }.let { (segments, remainingText) ->
-                if (remainingText.isNotEmpty()) {
-                    segments + RichText.Plain(remainingText)
-                } else {
-                    segments
+                MarkdownElementTypes.EMPH -> {
+                    segments +
+                        RichText.Italic(
+                            text =
+                                markdownContent
+                                    .substring(child.startOffset, child.endOffset)
+                                    .removeSurrounding("_")
+                                    .removeSurrounding("*"),
+                        )
+                }
+                MarkdownElementTypes.STRONG -> {
+                    segments +
+                        RichText.Bold(
+                            text =
+                                markdownContent
+                                    .substring(child.startOffset, child.endOffset)
+                                    .removeSurrounding("**"),
+                        )
+                }
+                MarkdownElementTypes.CODE_SPAN -> {
+                    segments +
+                        RichText.InlineCode(
+                            text = markdownContent.substring(child.startOffset, child.endOffset).trim('`'),
+                        )
+                }
+                else -> {
+                    val text =
+                        markdownContent.substring(child.startOffset, child.endOffset).let {
+                            if (segments.isEmpty()) it.trimStart() else it
+                        }
+                    if (text.isEmpty()) {
+                        segments
+                    } else {
+                        // Try to combine with previous Plain segment if possible
+                        when (val lastSegment = segments.lastOrNull()) {
+                            is RichText.Plain -> segments.dropLast(1) + RichText.Plain(lastSegment.text + text)
+                            else -> segments + RichText.Plain(text)
+                        }
+                    }
                 }
             }
+        }
 
     private fun parseCodeBlock(
         node: ASTNode,
