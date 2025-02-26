@@ -481,8 +481,10 @@ class MarkdownContentParserTest {
                         listOf(it).map(RichText::Plain)
                     } +
                         listOf(
-                            RichText.Plain("Forth is  "),
-                            RichText.Italic("tricky"),
+                            listOf(
+                                RichText.Plain("Forth is "),
+                                RichText.Italic("tricky"),
+                            ),
                         ),
                     items,
                 )

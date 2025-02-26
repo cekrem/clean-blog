@@ -196,6 +196,7 @@ private class MarkdownBlockParser {
                             )
                         }
                 }
+
                 MarkdownElementTypes.EMPH -> {
                     segments +
                         RichText.Italic(
@@ -206,6 +207,7 @@ private class MarkdownBlockParser {
                                     .removeSurrounding("*"),
                         )
                 }
+
                 MarkdownElementTypes.STRONG -> {
                     segments +
                         RichText.Bold(
@@ -215,12 +217,14 @@ private class MarkdownBlockParser {
                                     .removeSurrounding("**"),
                         )
                 }
+
                 MarkdownElementTypes.CODE_SPAN -> {
                     segments +
                         RichText.InlineCode(
                             text = markdownContent.substring(child.startOffset, child.endOffset).trim('`'),
                         )
                 }
+
                 else -> {
                     val text =
                         markdownContent.substring(child.startOffset, child.endOffset).let {
@@ -346,22 +350,16 @@ private class MarkdownBlockParser {
         markdownContent: String,
     ): ContentBlock.TextList {
         val items =
-            buildList {
-                node.children
-                    .forEach { itemNode ->
-                        if (itemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                            add(parseRichText(itemNode.children.drop(1), markdownContent))
-//                        val itemText =
-//                            markdownContent
-//                                .substring(itemNode.startOffset, itemNode.endOffset)
-//                                .replace(Regex("^\\s*([*+-]|\\d+[.)])\\s*"), "")
-//                                .trim()
-//                        if (itemText.isNotBlank()) {
-//                            add(itemText)
-//                        }
-                        }
-                    }
-            }
+            node.children
+                .filter { it.type == MarkdownElementTypes.LIST_ITEM }
+                .map {
+                    parseRichText(
+                        children =
+                            it.children.find { child -> child.type == MarkdownElementTypes.PARAGRAPH }?.children
+                                ?: emptyList(),
+                        markdownContent = markdownContent,
+                    )
+                }
 
         return ContentBlock.TextList(items = items, ordered = node.type == MarkdownElementTypes.ORDERED_LIST)
     }
