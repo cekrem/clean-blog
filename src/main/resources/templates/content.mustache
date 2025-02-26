@@ -40,7 +40,17 @@
             {{#blockTypes.textList}}
             {{#properties.ordered}}<ol>{{/properties.ordered}}
             {{^properties.ordered}}<ul>{{/properties.ordered}}
-                {{#properties.items}}<li>{{.}}</li>{{/properties.items}}
+                {{#properties.items}}
+                <li>
+                    {{#.}}
+                        {{#textTypes.plain}}{{properties.text}}{{/textTypes.plain}}
+                        {{#textTypes.bold}}<strong>{{properties.text}}</strong>{{/textTypes.bold}}
+                        {{#textTypes.italic}}<i>{{properties.text}}</i>{{/textTypes.italic}}
+                        {{#textTypes.inlineCode}}<code>{{properties.text}}</code>{{/textTypes.inlineCode}}
+                        {{#textTypes.inlineLink}}<a href="{{properties.url}}">{{properties.text}}</a>{{/textTypes.inlineLink}}
+                    {{/.}}
+                </li>
+                {{/properties.items}}
             {{#properties.ordered}}</ol>{{/properties.ordered}}
             {{^properties.ordered}}</ul>{{/properties.ordered}}
             {{/blockTypes.textList}}

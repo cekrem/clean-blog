@@ -7,8 +7,8 @@ sealed interface ContentBlock {
     ) : ContentBlock {
         init {
             require(level in 1..6) { "Heading level must be between 1 and 6" }
-            require(segments.isNotEmpty()) { "Heading text cannot be empty or blank" }
-            require(segments.none { it.text.isBlank() }) { "Heading text cannot be empty or blank" }
+            require(segments.isNotEmpty()) { "Heading must contain at least one segment" }
+            require(segments.none { it.text.isBlank() }) { "Heading text segment cannot be empty or blank" }
         }
     }
 
@@ -17,6 +17,7 @@ sealed interface ContentBlock {
     ) : ContentBlock {
         init {
             require(segments.isNotEmpty()) { "Text must contain at least one segment" }
+            require(segments.none { it.text.isBlank() }) { "Text segment cannot be empty or blank" }
         }
     }
 
@@ -71,13 +72,14 @@ sealed interface ContentBlock {
     }
 
     data class TextList(
-        val items: List<String>,
+        val items: List<List<RichText>>,
         val ordered: Boolean = false,
     ) : ContentBlock {
         init {
             require(items.isNotEmpty()) { "List must contain at least one item" }
-            items.forEach { item ->
-                require(item.isNotBlank()) { "List items cannot be blank" }
+            items.forEach { segments ->
+                require(segments.isNotEmpty()) { "List item must contain at least one segment" }
+                require(segments.none { it.text.isBlank() }) { "List text segment cannot be empty or blank" }
             }
         }
     }

@@ -27,7 +27,7 @@ sealed class ContentBlockDto(
         )
 
     data class TextList(
-        val items: List<String>,
+        val items: List<List<RichTextDto>>,
         val ordered: Boolean,
     ) : ContentBlockDto(
             blockTypes = mapOf("textList" to true),
@@ -144,7 +144,7 @@ fun ContentBlock.toDto(): ContentBlockDto =
         is ContentBlock.Quote -> ContentBlockDto.Quote(content, attribution)
         is ContentBlock.Link -> ContentBlockDto.Link(text, url, external)
         is ContentBlock.Image -> ContentBlockDto.Image(url, alt, caption)
-        is ContentBlock.TextList -> ContentBlockDto.TextList(items, ordered)
+        is ContentBlock.TextList -> ContentBlockDto.TextList(items.map { item -> item.map { it.toDto() } }, ordered)
     }
 
 private fun RichText.toDto(): RichTextDto =

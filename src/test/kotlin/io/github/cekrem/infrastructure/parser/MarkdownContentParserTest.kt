@@ -453,7 +453,7 @@ class MarkdownContentParserTest {
 
             assertEquals(1, result.blocks.size)
             with(result.blocks[0] as ContentBlock.TextList) {
-                assertEquals(listOf("Item 1", "Item 2", "Item 3"), items)
+                assertEquals(listOf("Item 1", "Item 2", "Item 3").map { listOf(it).map(RichText::Plain) }, items)
                 assertFalse(ordered)
             }
         }
@@ -469,13 +469,23 @@ class MarkdownContentParserTest {
                 1. First
                 2. Second
                 3. Third
+                4. Forth is _tricky_
                 """.trimIndent()
 
             val result = contentParser.parse(rawContent, "posts/test", ContentType("posts", true))
 
             assertEquals(1, result.blocks.size)
             with(result.blocks[0] as ContentBlock.TextList) {
-                assertEquals(listOf("First", "Second", "Third"), items)
+                assertEquals(
+                    listOf("First", "Second", "Third").map {
+                        listOf(it).map(RichText::Plain)
+                    } +
+                        listOf(
+                            RichText.Plain("Forth is  "),
+                            RichText.Italic("tricky"),
+                        ),
+                    items,
+                )
                 assertTrue(ordered)
             }
         }

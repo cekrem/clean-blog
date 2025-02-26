@@ -347,18 +347,20 @@ private class MarkdownBlockParser {
     ): ContentBlock.TextList {
         val items =
             buildList {
-                node.children.forEach { itemNode ->
-                    if (itemNode.type == MarkdownElementTypes.LIST_ITEM) {
-                        val itemText =
-                            markdownContent
-                                .substring(itemNode.startOffset, itemNode.endOffset)
-                                .replace(Regex("^\\s*([*+-]|\\d+[.)])\\s*"), "")
-                                .trim()
-                        if (itemText.isNotBlank()) {
-                            add(itemText)
+                node.children
+                    .forEach { itemNode ->
+                        if (itemNode.type == MarkdownElementTypes.LIST_ITEM) {
+                            add(parseRichText(itemNode.children.drop(1), markdownContent))
+//                        val itemText =
+//                            markdownContent
+//                                .substring(itemNode.startOffset, itemNode.endOffset)
+//                                .replace(Regex("^\\s*([*+-]|\\d+[.)])\\s*"), "")
+//                                .trim()
+//                        if (itemText.isNotBlank()) {
+//                            add(itemText)
+//                        }
                         }
                     }
-                }
             }
 
         return ContentBlock.TextList(items = items, ordered = node.type == MarkdownElementTypes.ORDERED_LIST)
